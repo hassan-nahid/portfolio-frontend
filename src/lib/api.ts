@@ -1,5 +1,5 @@
 // API Configuration
-export const API_BASE_URL = 'http://localhost:5000/api/v1'
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // API Response Types
 export interface ApiResponse<T = unknown> {
@@ -174,6 +174,100 @@ export const aboutApi = {
 
   delete: (id: string) =>
     apiRequest<null>(`/about/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
+// Skills API Types
+export interface SkillData {
+  _id: string
+  skill: string
+  logo: string
+  category: SkillCategoryData
+  level: 'Beginner' | 'Intermediate' | 'Experienced' | 'Expert' | 'Good' | 'Strong' | 'Excellent'
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface SkillCategoryData {
+  _id: string
+  title: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface CreateSkillData {
+  skill: string
+  logo: string
+  category: string // ObjectId as string
+  level: 'Beginner' | 'Intermediate' | 'Experienced' | 'Expert' | 'Good' | 'Strong' | 'Excellent'
+}
+
+export interface CreateSkillCategoryData {
+  title: string
+}
+
+// Skills API
+export const skillsApi = {
+  // Skills CRUD
+  getAll: () =>
+    apiRequest<SkillData[]>('/skill'),
+
+  getById: (id: string) =>
+    apiRequest<SkillData>(`/skill/${id}`),
+
+  create: (data: CreateSkillData) =>
+    apiRequest<SkillData>('/skill', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  createWithFile: (formData: FormData) =>
+    apiRequest<SkillData>('/skill', {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Remove Content-Type header to let browser set it for FormData
+    }),
+
+  update: (id: string, data: Partial<CreateSkillData>) =>
+    apiRequest<SkillData>(`/skill/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  updateWithFile: (id: string, formData: FormData) =>
+    apiRequest<SkillData>(`/skill/${id}`, {
+      method: 'PUT',
+      body: formData,
+      headers: {}, // Remove Content-Type header to let browser set it for FormData
+    }),
+
+  delete: (id: string) =>
+    apiRequest<null>(`/skill/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Categories CRUD
+  getCategories: () =>
+    apiRequest<SkillCategoryData[]>('/skill/category'),
+
+  getCategoryById: (id: string) =>
+    apiRequest<SkillCategoryData>(`/skill/category/${id}`),
+
+  createCategory: (data: CreateSkillCategoryData) =>
+    apiRequest<SkillCategoryData>('/skill/category', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateCategory: (id: string, data: Partial<CreateSkillCategoryData>) =>
+    apiRequest<SkillCategoryData>(`/skill/category/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteCategory: (id: string) =>
+    apiRequest<null>(`/skill/category/${id}`, {
       method: 'DELETE',
     }),
 }

@@ -12,41 +12,22 @@ import {
   Code
 } from 'lucide-react'
 import Image from 'next/image'
+import { skillsApi, SkillData, SkillCategoryData } from '@/lib/api'
+import { toast } from 'sonner'
 
-interface SkillCategory {
-  _id: string
-  name: string
-  description: string
-  icon: string
-  createdAt: string
-  updatedAt: string
-}
-
-interface Skill {
-  _id: string
-  name: string
-  logo: string
-  category: SkillCategory
-  proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'
-  yearsOfExperience: number
-  description: string
-  createdAt: string
-  updatedAt: string
-}
+// Using API types
+type SkillCategory = SkillCategoryData
+type Skill = SkillData
 
 interface CategoryFormData {
-  name: string
-  description: string
-  icon: string
+  title: string  // Backend uses 'title'
 }
 
 interface SkillFormData {
-  name: string
+  skill: string  // Backend uses 'skill'
   logo: string
-  category: string
-  proficiency: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert'
-  yearsOfExperience: number
-  description: string
+  category: string  // ObjectId as string
+  level: 'Beginner' | 'Intermediate' | 'Experienced' | 'Expert' | 'Good' | 'Strong' | 'Excellent'  // Backend enum
 }
 
 export default function SkillsPage() {
@@ -62,19 +43,36 @@ export default function SkillsPage() {
   const [selectedItem, setSelectedItem] = useState<Skill | SkillCategory | null>(null)
   
   const [skillFormData, setSkillFormData] = useState<SkillFormData>({
-    name: '',
+    skill: '',
     logo: '',
     category: '',
-    proficiency: 'Beginner',
-    yearsOfExperience: 0,
-    description: ''
+    level: 'Beginner'
   })
 
   const [categoryFormData, setCategoryFormData] = useState<CategoryFormData>({
-    name: '',
-    description: '',
-    icon: ''
+    title: ''
   })
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file')
+        return
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB')
+        return
+      }
+      
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file)
+      setSkillFormData(prev => ({ ...prev, logo: previewUrl }))
+    }
+  }
 
   useEffect(() => {
     fetchSkills()
@@ -83,66 +81,15 @@ export default function SkillsPage() {
 
   const fetchSkills = async () => {
     try {
-      // Mock data - replace with actual API call to /api/v1/skill
-      const mockSkills: Skill[] = [
-        {
-          _id: '1',
-          name: 'React',
-          logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg',
-          category: {
-            _id: 'cat1',
-            name: 'Frontend',
-            description: 'Frontend Development Technologies',
-            icon: '🎨',
-            createdAt: '2024-01-01T00:00:00Z',
-            updatedAt: '2024-01-01T00:00:00Z'
-          },
-          proficiency: 'Expert',
-          yearsOfExperience: 5,
-          description: 'Building modern, interactive user interfaces with React',
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-16T14:22:00Z'
-        },
-        {
-          _id: '2',
-          name: 'Node.js',
-          logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg',
-          category: {
-            _id: 'cat2',
-            name: 'Backend',
-            description: 'Backend Development Technologies',
-            icon: '⚙️',
-            createdAt: '2024-01-01T00:00:00Z',
-            updatedAt: '2024-01-01T00:00:00Z'
-          },
-          proficiency: 'Advanced',
-          yearsOfExperience: 4,
-          description: 'Server-side JavaScript runtime for building scalable applications',
-          createdAt: '2024-01-10T09:15:00Z',
-          updatedAt: '2024-01-10T09:15:00Z'
-        },
-        {
-          _id: '3',
-          name: 'MongoDB',
-          logo: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg',
-          category: {
-            _id: 'cat3',
-            name: 'Database',
-            description: 'Database Technologies',
-            icon: '🗄️',
-            createdAt: '2024-01-01T00:00:00Z',
-            updatedAt: '2024-01-01T00:00:00Z'
-          },
-          proficiency: 'Intermediate',
-          yearsOfExperience: 3,
-          description: 'NoSQL database for modern applications',
-          createdAt: '2024-01-05T15:45:00Z',
-          updatedAt: '2024-01-05T15:45:00Z'
-        }
-      ]
-      setSkills(mockSkills)
+      const response = await skillsApi.getAll()
+      if (response.success && response.data) {
+        setSkills(response.data)
+      } else {
+        toast.error('Failed to fetch skills')
+      }
     } catch (error) {
       console.error('Failed to fetch skills:', error)
+      toast.error('Failed to fetch skills')
     } finally {
       setIsLoading(false)
     }
@@ -150,46 +97,31 @@ export default function SkillsPage() {
 
   const fetchCategories = async () => {
     try {
-      // Mock data - replace with actual API call to /api/v1/skill/category
-      const mockCategories: SkillCategory[] = [
-        {
-          _id: 'cat1',
-          name: 'Frontend',
-          description: 'Frontend Development Technologies',
-          icon: '🎨',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z'
-        },
-        {
-          _id: 'cat2',
-          name: 'Backend',
-          description: 'Backend Development Technologies',
-          icon: '⚙️',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z'
-        },
-        {
-          _id: 'cat3',
-          name: 'Database',
-          description: 'Database Technologies',
-          icon: '🗄️',
-          createdAt: '2024-01-01T00:00:00Z',
-          updatedAt: '2024-01-01T00:00:00Z'
-        }
-      ]
-      setCategories(mockCategories)
+      const response = await skillsApi.getCategories()
+      if (response.success && response.data) {
+        setCategories(response.data)
+      } else {
+        toast.error('Failed to fetch categories')
+      }
     } catch (error) {
       console.error('Failed to fetch categories:', error)
+      toast.error('Failed to fetch categories')
     }
   }
 
   const handleDeleteSkill = async (id: string) => {
     if (confirm('Are you sure you want to delete this skill?')) {
       try {
-        // API call to DELETE /api/v1/skill/:id
-        setSkills(skills.filter(skill => skill._id !== id))
+        const response = await skillsApi.delete(id)
+        if (response.success) {
+          setSkills(skills.filter(skill => skill._id !== id))
+          toast.success('Skill deleted successfully')
+        } else {
+          toast.error('Failed to delete skill')
+        }
       } catch (error) {
         console.error('Failed to delete skill:', error)
+        toast.error('Failed to delete skill')
       }
     }
   }
@@ -197,11 +129,18 @@ export default function SkillsPage() {
   const handleDeleteCategory = async (id: string) => {
     if (confirm('Are you sure you want to delete this category? This will also delete all skills in this category.')) {
       try {
-        // API call to DELETE /api/v1/skill/category/:id
-        setCategories(categories.filter(category => category._id !== id))
-        setSkills(skills.filter(skill => skill.category._id !== id))
+        const response = await skillsApi.deleteCategory(id)
+        if (response.success) {
+          setCategories(categories.filter(category => category._id !== id))
+          // Refresh skills to remove those that belonged to deleted category
+          fetchSkills()
+          toast.success('Category deleted successfully')
+        } else {
+          toast.error('Failed to delete category')
+        }
       } catch (error) {
         console.error('Failed to delete category:', error)
+        toast.error('Failed to delete category')
       }
     }
   }
@@ -210,28 +149,38 @@ export default function SkillsPage() {
     e.preventDefault()
     try {
       if (isEditing && selectedItem) {
-        // API call to PUT /api/v1/skill/:id
-        const updatedSkill: Skill = {
-          ...(selectedItem as Skill),
-          ...skillFormData,
-          category: categories.find(c => c._id === skillFormData.category)!,
-          updatedAt: new Date().toISOString()
+        // Update skill
+        const response = await skillsApi.update(selectedItem._id, {
+          skill: skillFormData.skill,
+          logo: skillFormData.logo,
+          category: skillFormData.category,
+          level: skillFormData.level
+        })
+        if (response.success && response.data) {
+          setSkills(skills.map(skill => skill._id === selectedItem._id ? response.data! : skill))
+          toast.success('Skill updated successfully')
+        } else {
+          toast.error('Failed to update skill')
         }
-        setSkills(skills.map(s => s._id === selectedItem._id ? updatedSkill : s))
       } else {
-        // API call to POST /api/v1/skill
-        const newSkill: Skill = {
-          _id: Date.now().toString(),
-          ...skillFormData,
-          category: categories.find(c => c._id === skillFormData.category)!,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+        // Create new skill
+        const response = await skillsApi.create({
+          skill: skillFormData.skill,
+          logo: skillFormData.logo,
+          category: skillFormData.category,
+          level: skillFormData.level
+        })
+        if (response.success && response.data) {
+          setSkills([response.data, ...skills])
+          toast.success('Skill created successfully')
+        } else {
+          toast.error('Failed to create skill')
         }
-        setSkills([newSkill, ...skills])
       }
       resetForm()
     } catch (error) {
       console.error('Failed to save skill:', error)
+      toast.error('Failed to save skill')
     }
   }
 
@@ -239,48 +188,46 @@ export default function SkillsPage() {
     e.preventDefault()
     try {
       if (isEditing && selectedItem) {
-        // API call to PUT /api/v1/skill/category/:id
-        const updatedCategory: SkillCategory = {
-          ...(selectedItem as SkillCategory),
-          ...categoryFormData,
-          updatedAt: new Date().toISOString()
+        // Update category
+        const response = await skillsApi.updateCategory(selectedItem._id, {
+          title: categoryFormData.title
+        })
+        if (response.success && response.data) {
+          setCategories(categories.map(category => category._id === selectedItem._id ? response.data! : category))
+          // Refresh skills to get updated category data
+          fetchSkills()
+          toast.success('Category updated successfully')
+        } else {
+          toast.error('Failed to update category')
         }
-        setCategories(categories.map(c => c._id === selectedItem._id ? updatedCategory : c))
-        // Update skills that use this category
-        setSkills(skills.map(s => 
-          s.category._id === selectedItem._id 
-            ? { ...s, category: updatedCategory }
-            : s
-        ))
       } else {
-        // API call to POST /api/v1/skill/category
-        const newCategory: SkillCategory = {
-          _id: Date.now().toString(),
-          ...categoryFormData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+        // Create new category
+        const response = await skillsApi.createCategory({
+          title: categoryFormData.title
+        })
+        if (response.success && response.data) {
+          setCategories([response.data, ...categories])
+          toast.success('Category created successfully')
+        } else {
+          toast.error('Failed to create category')
         }
-        setCategories([newCategory, ...categories])
       }
       resetForm()
     } catch (error) {
       console.error('Failed to save category:', error)
+      toast.error('Failed to save category')
     }
   }
 
   const resetForm = () => {
     setSkillFormData({
-      name: '',
+      skill: '',
       logo: '',
       category: '',
-      proficiency: 'Beginner',
-      yearsOfExperience: 0,
-      description: ''
+      level: 'Beginner'
     })
     setCategoryFormData({
-      name: '',
-      description: '',
-      icon: ''
+      title: ''
     })
     setShowModal(false)
     setIsEditing(false)
@@ -291,12 +238,10 @@ export default function SkillsPage() {
     if (skill) {
       setSelectedItem(skill)
       setSkillFormData({
-        name: skill.name,
+        skill: skill.skill,
         logo: skill.logo,
         category: skill.category._id,
-        proficiency: skill.proficiency,
-        yearsOfExperience: skill.yearsOfExperience,
-        description: skill.description
+        level: skill.level
       })
       setIsEditing(true)
     } else {
@@ -310,9 +255,7 @@ export default function SkillsPage() {
     if (category) {
       setSelectedItem(category)
       setCategoryFormData({
-        name: category.name,
-        description: category.description,
-        icon: category.icon
+        title: category.title
       })
       setIsEditing(true)
     } else {
@@ -323,20 +266,23 @@ export default function SkillsPage() {
   }
 
   const filteredSkills = skills.filter(skill => {
-    const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         skill.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = skill.skill.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'all' || skill.category._id === selectedCategory
     return matchesSearch && matchesCategory
   })
 
-  const getProficiencyColor = (proficiency: string) => {
-    switch (proficiency) {
+  const getLevelColor = (level: string) => {
+    switch (level) {
       case 'Expert':
+      case 'Excellent':
         return 'bg-purple-500/20 text-purple-400'
-      case 'Advanced':
+      case 'Experienced':
+      case 'Strong':
         return 'bg-green-500/20 text-green-400'
       case 'Intermediate':
+      case 'Good':
         return 'bg-yellow-500/20 text-yellow-400'
+      case 'Beginner':
       default:
         return 'bg-blue-500/20 text-blue-400'
     }
@@ -349,15 +295,15 @@ export default function SkillsPage() {
           <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
             <Image
               src={skill.logo}
-              alt={skill.name}
+              alt={skill.skill}
               width={32}
               height={32}
               className="w-8 h-8"
             />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">{skill.name}</h3>
-            <span className="text-sm text-gray-400">{skill.category.name}</span>
+            <h3 className="text-lg font-semibold text-white">{skill.skill}</h3>
+            <span className="text-sm text-gray-400">{skill.category.title}</span>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -378,17 +324,10 @@ export default function SkillsPage() {
         </div>
       </div>
 
-      <p className="text-gray-300 text-sm mb-4 line-clamp-2">{skill.description}</p>
-
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getProficiencyColor(skill.proficiency)}`}>
-            {skill.proficiency}
-          </span>
-          <span className="text-xs text-gray-400">
-            {skill.yearsOfExperience} years
-          </span>
-        </div>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getLevelColor(skill.level)}`}>
+          {skill.level}
+        </span>
       </div>
     </div>
   )
@@ -397,11 +336,11 @@ export default function SkillsPage() {
     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center text-2xl">
-            {category.icon}
+          <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
+            <Folder className="w-6 h-6 text-gray-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">{category.name}</h3>
+            <h3 className="text-lg font-semibold text-white">{category.title}</h3>
             <span className="text-sm text-gray-400">
               {skills.filter(s => s.category._id === category._id).length} skills
             </span>
@@ -424,8 +363,6 @@ export default function SkillsPage() {
           </button>
         </div>
       </div>
-
-      <p className="text-gray-300 text-sm">{category.description}</p>
     </div>
   )
 
@@ -508,16 +445,23 @@ export default function SkillsPage() {
                 className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
               />
             </div>
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-            >
-              <option value="all">All Categories</option>
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>{category.name}</option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full bg-gradient-to-r from-white/5 to-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 hover:border-white/30 transition-all duration-300 appearance-none cursor-pointer shadow-lg backdrop-blur-sm pr-10"
+              >
+                <option value="all" className="bg-gray-900/95 text-white py-2">🎯 All Categories</option>
+                {categories.map((category) => (
+                  <option key={category._id} value={category._id} className="bg-gray-900/95 text-white py-2">📁 {category.title}</option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
 
           {/* Skills Grid */}
@@ -570,74 +514,119 @@ export default function SkillsPage() {
                   <label className="block text-white font-medium mb-2">Skill Name</label>
                   <input
                     type="text"
-                    value={skillFormData.name}
-                    onChange={(e) => setSkillFormData(prev => ({ ...prev, name: e.target.value }))}
+                    value={skillFormData.skill}
+                    onChange={(e) => setSkillFormData(prev => ({ ...prev, skill: e.target.value }))}
                     className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                     required
                   />
                 </div>
                 <div>
                   <label className="block text-white font-medium mb-2">Category</label>
+                  <div className="relative">
+                    <select
+                      value={skillFormData.category}
+                      onChange={(e) => setSkillFormData(prev => ({ ...prev, category: e.target.value }))}
+                      className="w-full bg-gradient-to-r from-white/5 to-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/30 hover:border-white/30 transition-all duration-300 appearance-none cursor-pointer shadow-lg backdrop-blur-sm pr-10"
+                      required
+                    >
+                      <option value="" className="bg-gray-900/95 text-white">📎 Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category._id} value={category._id} className="bg-gray-900/95 text-white">📁 {category.title}</option>
+                      ))}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">Logo</label>
+                <div className="space-y-4">
+                  {/* URL Input */}
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Logo URL</label>
+                    <input
+                      type="url"
+                      value={skillFormData.logo}
+                      onChange={(e) => setSkillFormData(prev => ({ ...prev, logo: e.target.value }))}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                      placeholder="https://example.com/logo.svg"
+                    />
+                  </div>
+                  
+                  {/* OR Divider */}
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1 h-px bg-white/10"></div>
+                    <span className="text-sm text-gray-400">OR</span>
+                    <div className="flex-1 h-px bg-white/10"></div>
+                  </div>
+                  
+                  {/* File Upload */}
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">Upload Logo</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoFileChange}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:bg-blue-500 file:text-white hover:file:bg-blue-600"
+                    />
+                  </div>
+                  
+                  {/* Preview */}
+                  {skillFormData.logo && (
+                    <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
+                      <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
+                        <Image
+                          src={skillFormData.logo}
+                          alt="Logo preview"
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 object-contain"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm text-white">Logo Preview</p>
+                        <p className="text-xs text-gray-400 truncate max-w-xs">{skillFormData.logo}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSkillFormData(prev => ({ ...prev, logo: '' }))}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">Skill Level</label>
+                <div className="relative">
                   <select
-                    value={skillFormData.category}
-                    onChange={(e) => setSkillFormData(prev => ({ ...prev, category: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                    value={skillFormData.level}
+                    onChange={(e) => setSkillFormData(prev => ({ ...prev, level: e.target.value as 'Beginner' | 'Intermediate' | 'Experienced' | 'Expert' | 'Good' | 'Strong' | 'Excellent' }))}
+                    className="w-full bg-gradient-to-r from-white/5 to-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/30 hover:border-white/30 transition-all duration-300 appearance-none cursor-pointer shadow-lg backdrop-blur-sm pr-10"
                     required
                   >
-                    <option value="">Select Category</option>
-                    {categories.map((category) => (
-                      <option key={category._id} value={category._id}>{category.name}</option>
-                    ))}
+                    <option value="Beginner" className="bg-gray-900/95 text-white">🌱 Beginner</option>
+                    <option value="Intermediate" className="bg-gray-900/95 text-white">🌿 Intermediate</option>
+                    <option value="Experienced" className="bg-gray-900/95 text-white">🌳 Experienced</option>
+                    <option value="Expert" className="bg-gray-900/95 text-white">🎆 Expert</option>
+                    <option value="Good" className="bg-gray-900/95 text-white">🙌 Good</option>
+                    <option value="Strong" className="bg-gray-900/95 text-white">💪 Strong</option>
+                    <option value="Excellent" className="bg-gray-900/95 text-white">🏆 Excellent</option>
                   </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-white font-medium mb-2">Logo URL</label>
-                <input
-                  type="url"
-                  value={skillFormData.logo}
-                  onChange={(e) => setSkillFormData(prev => ({ ...prev, logo: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-white font-medium mb-2">Proficiency Level</label>
-                  <select
-                    value={skillFormData.proficiency}
-                    onChange={(e) => setSkillFormData(prev => ({ ...prev, proficiency: e.target.value as 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert' }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="Beginner">Beginner</option>
-                    <option value="Intermediate">Intermediate</option>
-                    <option value="Advanced">Advanced</option>
-                    <option value="Expert">Expert</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-white font-medium mb-2">Years of Experience</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="50"
-                    value={skillFormData.yearsOfExperience}
-                    onChange={(e) => setSkillFormData(prev => ({ ...prev, yearsOfExperience: parseInt(e.target.value) || 0 }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-white font-medium mb-2">Description</label>
-                <textarea
-                  value={skillFormData.description}
-                  onChange={(e) => setSkillFormData(prev => ({ ...prev, description: e.target.value }))}
-                  rows={3}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                />
               </div>
 
               <div className="flex items-center justify-end space-x-4 pt-6 border-t border-white/10">
@@ -683,35 +672,14 @@ export default function SkillsPage() {
                 <label className="block text-white font-medium mb-2">Category Name</label>
                 <input
                   type="text"
-                  value={categoryFormData.name}
-                  onChange={(e) => setCategoryFormData(prev => ({ ...prev, name: e.target.value }))}
+                  value={categoryFormData.title}
+                  onChange={(e) => setCategoryFormData(prev => ({ ...prev, title: e.target.value }))}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
                   required
                 />
               </div>
 
-              <div>
-                <label className="block text-white font-medium mb-2">Icon (Emoji)</label>
-                <input
-                  type="text"
-                  value={categoryFormData.icon}
-                  onChange={(e) => setCategoryFormData(prev => ({ ...prev, icon: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  placeholder="🎨"
-                  required
-                />
-              </div>
 
-              <div>
-                <label className="block text-white font-medium mb-2">Description</label>
-                <textarea
-                  value={categoryFormData.description}
-                  onChange={(e) => setCategoryFormData(prev => ({ ...prev, description: e.target.value }))}
-                  rows={3}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
-              </div>
 
               <div className="flex items-center justify-end space-x-4 pt-6 border-t border-white/10">
                 <button
