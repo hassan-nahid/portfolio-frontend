@@ -7,7 +7,13 @@ const DotIcon = () => (
         <circle cx="4" cy="4" r="4" fill="currentColor" />
     </svg>
 );
-
+    const downloadCV = () => {
+        const pdfURL = 'https://drive.google.com/uc?export=download&id=1dCXijZ18Ss9QlU7l6llUEayyqZbGgZpa';
+        const anchor = document.createElement('a');
+        anchor.href = pdfURL;
+        anchor.download = 'Full_Stack_Developer_Resume_of_Hassan_Nahid.pdf';
+        anchor.click();
+    };
 
 
 // The data for the code snippet
@@ -26,8 +32,8 @@ const coderData = {
 
 const socialIcons = [
     {
-        name: "X",
-        href: "#",
+        name: "GitHub",
+        href: "https://github.com/hassan-nahid",
         svg: (
             <svg
                 className="size-6 transition-transform duration-200 hover:scale-110"
@@ -38,14 +44,14 @@ const socialIcons = [
             >
                 <path
                     fill="currentColor"
-                    d="M10.488 14.651L15.25 21h7l-7.858-10.478L20.93 3h-2.65l-5.117 5.886L8.75 3h-7l7.51 10.015L2.32 21h2.65zM16.25 19L5.75 5h2l10.5 14z"
+                    d="M12 2C6.475 2 2 6.475 2 12a9.994 9.994 0 0 0 6.838 9.488c.5.087.687-.213.687-.476c0-.237-.013-1.024-.013-1.862c-2.512.463-3.162-.612-3.362-1.175c-.113-.288-.6-1.175-1.025-1.413c-.35-.187-.85-.65-.013-.662c.788-.013 1.35.725 1.538 1.025c.9 1.512 2.338 1.087 2.912.825c.088-.65.35-1.087.638-1.337c-2.225-.25-4.55-1.113-4.55-4.938c0-1.088.387-1.987 1.025-2.688c-.1-.25-.45-1.275.1-2.65c0 0 .837-.262 2.75 1.026a9.28 9.28 0 0 1 2.5-.337c.85 0 1.7.112 2.5.337c1.912-1.3 2.75-1.025 2.75-1.025c.55 1.375.2 2.4.1 2.65c.637.7 1.025 1.587 1.025 2.687c0 3.838-2.337 4.688-4.562 4.938c.362.312.675.912.675 1.85c0 1.337-.013 2.412-.013 2.75c0 .262.188.574.688.474A10.016 10.016 0 0 0 22 12c0-5.525-4.475-10-10-10Z"
                 ></path>
             </svg>
         ),
     },
     {
         name: "LinkedIn",
-        href: "#",
+        href: "https://www.linkedin.com/in/hassan-nahid",
         svg: (
             <svg
                 className="size-6 transition-transform duration-200 hover:scale-110"
@@ -62,8 +68,8 @@ const socialIcons = [
         ),
     },
     {
-        name: "Facebook",
-        href: "#",
+        name: "X",
+        href: "https://x.com/HassanNahid100",
         svg: (
             <svg
                 className="size-6 transition-transform duration-200 hover:scale-110"
@@ -74,36 +80,14 @@ const socialIcons = [
             >
                 <path
                     fill="currentColor"
-                    d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"
-                ></path>
-            </svg>
-        ),
-    },
-    {
-        name: "Threads",
-        href: "#",
-        svg: (
-            <svg
-                className="size-6 transition-transform duration-200 hover:scale-110"
-                xmlns="http://www.w3.org/2000/svg"
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="1.5"
-                    d="M19.25 8.505c-1.577-5.867-7-5.5-7-5.5s-7.5-.5-7.5 8.995s7.5 8.996 7.5 8.996s4.458.296 6.5-3.918c.667-1.858.5-5.573-6-5.573c0 0-3 0-3 2.5c0 .976 1 2 2.5 2s3.171-1.027 3.5-3c1-6-4.5-6.5-6-4"
+                    d="M10.488 14.651L15.25 21h7l-7.858-10.478L20.93 3h-2.65l-5.117 5.886L8.75 3h-7l7.51 10.015L2.32 21h2.65zM16.25 19L5.75 5h2l10.5 14z"
                 ></path>
             </svg>
         ),
     },
     {
         name: "Instagram",
-        href: "#",
+        href: "https://www.instagram.com/HassanNahid10",
         svg: (
             <svg
                 className="size-6 transition-transform duration-200 hover:scale-110"
@@ -120,8 +104,8 @@ const socialIcons = [
         ),
     },
     {
-        name: "TikTok",
-        href: "#",
+        name: "Facebook",
+        href: "https://www.facebook.com/HassanNahid10",
         svg: (
             <svg
                 className="size-6 transition-transform duration-200 hover:scale-110"
@@ -132,7 +116,7 @@ const socialIcons = [
             >
                 <path
                     fill="currentColor"
-                    d="M16.6 5.82s.51.5 0 0A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5c-1.42 0-2.6-1.16-2.6-2.6c0-1.72 1.66-3.01 3.37-2.48V9.66c-3.45-.46-6.47 2.22-6.47 5.64c0 3.33 2.76 5.7 5.69 5.7c3.14 0 5.69-2.55 5.69-5.7V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3s-1.88.09-3.24-1.48"
+                    d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95"
                 ></path>
             </svg>
         ),
@@ -303,7 +287,7 @@ const HeroSection = () => {
                             ))}
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-4 sm:mt-6 w-full sm:w-auto">
-                            <button className="px-6 py-3 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
+                            <button onClick={downloadCV} className="cursor-pointer px-6 py-3 bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white rounded-lg font-semibold transition-all duration-300 hover:scale-105 active:scale-95">
                                 Get Resume
                             </button>
                         </div>

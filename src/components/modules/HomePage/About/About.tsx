@@ -5,7 +5,7 @@ import NumberTicker from "./Number"
 
 const About = () => {
     return (
-        <div className="py-16">
+        <div className="py-16" id="about">
             {/* About Section Header */}
             {/* About Me Section + Skill Section */}
             <div className="relative overflow-hidden">
