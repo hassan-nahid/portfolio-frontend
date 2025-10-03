@@ -52,25 +52,43 @@ export default function SkillsPage() {
   const [categoryFormData, setCategoryFormData] = useState<CategoryFormData>({
     title: ''
   })
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string>('')
+  const [logoChanged, setLogoChanged] = useState(false)
 
   const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file')
+        toast.error('Please select an image file')
         return
       }
       
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size must be less than 5MB')
+        toast.error('File size must be less than 5MB')
         return
       }
       
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file)
-      setSkillFormData(prev => ({ ...prev, logo: previewUrl }))
+      // Store the actual file and create preview URL
+      const preview = URL.createObjectURL(file)
+      setSelectedFile(file)
+      setPreviewUrl(preview)
+      setSkillFormData(prev => ({ ...prev, logo: preview }))
+      setLogoChanged(true)
+    }
+  }
+
+  const clearImageFile = (markAsChanged = true) => {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl)
+    }
+    setSelectedFile(null)
+    setPreviewUrl('')
+    setSkillFormData(prev => ({ ...prev, logo: '' }))
+    if (markAsChanged) {
+      setLogoChanged(true)
     }
   }
 
@@ -150,12 +168,32 @@ export default function SkillsPage() {
     try {
       if (isEditing && selectedItem) {
         // Update skill
-        const response = await skillsApi.update(selectedItem._id, {
-          skill: skillFormData.skill,
-          logo: skillFormData.logo,
-          category: skillFormData.category,
-          level: skillFormData.level
-        })
+        let response
+        if (selectedFile) {
+          // Handle file upload
+          const formDataWithFile = new FormData()
+          formDataWithFile.append('logo', selectedFile)
+          formDataWithFile.append('skill', skillFormData.skill)
+          formDataWithFile.append('category', skillFormData.category)
+          formDataWithFile.append('level', skillFormData.level)
+          
+          response = await skillsApi.updateWithFile(selectedItem._id, formDataWithFile)
+        } else {
+          // Handle URL update - only include logo if it has changed
+          const updatePayload: Partial<SkillFormData> = {
+            skill: skillFormData.skill,
+            category: skillFormData.category,
+            level: skillFormData.level
+          }
+          
+          // Only include logo if it has been changed by the user
+          if (logoChanged && skillFormData.logo && skillFormData.logo.trim() !== '') {
+            updatePayload.logo = skillFormData.logo
+          }
+          
+          response = await skillsApi.update(selectedItem._id, updatePayload)
+        }
+        
         if (response.success && response.data) {
           setSkills(skills.map(skill => skill._id === selectedItem._id ? response.data! : skill))
           toast.success('Skill updated successfully')
@@ -164,12 +202,26 @@ export default function SkillsPage() {
         }
       } else {
         // Create new skill
-        const response = await skillsApi.create({
-          skill: skillFormData.skill,
-          logo: skillFormData.logo,
-          category: skillFormData.category,
-          level: skillFormData.level
-        })
+        let response
+        if (selectedFile) {
+          // Handle file upload
+          const formDataWithFile = new FormData()
+          formDataWithFile.append('logo', selectedFile)
+          formDataWithFile.append('skill', skillFormData.skill)
+          formDataWithFile.append('category', skillFormData.category)
+          formDataWithFile.append('level', skillFormData.level)
+          
+          response = await skillsApi.createWithFile(formDataWithFile)
+        } else {
+          // Handle URL creation
+          response = await skillsApi.create({
+            skill: skillFormData.skill,
+            logo: skillFormData.logo,
+            category: skillFormData.category,
+            level: skillFormData.level
+          })
+        }
+        
         if (response.success && response.data) {
           setSkills([response.data, ...skills])
           toast.success('Skill created successfully')
@@ -229,6 +281,8 @@ export default function SkillsPage() {
     setCategoryFormData({
       title: ''
     })
+    clearImageFile(false)
+    setLogoChanged(false)
     setShowModal(false)
     setIsEditing(false)
     setSelectedItem(null)
@@ -243,6 +297,9 @@ export default function SkillsPage() {
         category: skill.category._id,
         level: skill.level
       })
+      // Clear any file state when editing existing skill
+      clearImageFile(false)
+      setLogoChanged(false)
       setIsEditing(true)
     } else {
       resetForm()
@@ -552,9 +609,16 @@ export default function SkillsPage() {
                     <input
                       type="url"
                       value={skillFormData.logo}
-                      onChange={(e) => setSkillFormData(prev => ({ ...prev, logo: e.target.value }))}
+                      onChange={(e) => {
+                        setSkillFormData(prev => ({ ...prev, logo: e.target.value }))
+                        setLogoChanged(true)
+                      }}
                       className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                      placeholder="https://example.com/logo.svg"
+                      placeholder={
+                        isEditing 
+                          ? "Enter new logo URL or leave empty to keep current logo" 
+                          : "https://example.com/logo.svg"
+                      }
                     />
                   </div>
                   
@@ -576,8 +640,34 @@ export default function SkillsPage() {
                     />
                   </div>
                   
-                  {/* Preview */}
-                  {skillFormData.logo && (
+                  {/* Show current logo when editing */}
+                  {isEditing && selectedItem && 'logo' in selectedItem && selectedItem.logo && (
+                    <div className="p-3 bg-white/5 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-sm text-gray-400">Current Logo:</p>
+                      </div>
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
+                          <Image
+                            src={selectedItem.logo}
+                            alt="Current logo"
+                            width={32}
+                            height={32}
+                            className="w-8 h-8 object-contain"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm text-white">Current Logo</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Leave empty to keep current logo
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Preview - only show if there's a new logo different from current */}
+                  {skillFormData.logo && (!isEditing || !selectedItem || !('logo' in selectedItem) || skillFormData.logo !== selectedItem.logo) && (
                     <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
                       <div className="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center">
                         <Image
@@ -589,12 +679,14 @@ export default function SkillsPage() {
                         />
                       </div>
                       <div>
-                        <p className="text-sm text-white">Logo Preview</p>
+                        <p className="text-sm text-white">
+                          {selectedFile ? 'New Logo Preview' : 'Logo Preview'}
+                        </p>
                         <p className="text-xs text-gray-400 truncate max-w-xs">{skillFormData.logo}</p>
                       </div>
                       <button
                         type="button"
-                        onClick={() => setSkillFormData(prev => ({ ...prev, logo: '' }))}
+                        onClick={() => clearImageFile()}
                         className="text-red-400 hover:text-red-300"
                       >
                         <X className="w-4 h-4" />

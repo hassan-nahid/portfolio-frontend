@@ -271,3 +271,94 @@ export const skillsApi = {
       method: 'DELETE',
     }),
 }
+
+// Project API Types
+export interface ProjectData {
+  _id: string
+  title: string
+  image: string
+  category: 'WEB' | 'MOBILE' | 'DESKTOP'
+  description: string
+  features?: string[] // Array of project features
+  demoLink?: string
+  githubFrontend?: string
+  githubBackend?: string
+  githubFullStack?: string
+  stacks: SkillData[] // Populated skill references
+  createdAt?: string
+  updatedAt?: string
+}
+
+export interface CreateProjectData {
+  title: string
+  image: string
+  category: 'WEB' | 'MOBILE' | 'DESKTOP'
+  description: string
+  features?: string[]
+  demoLink?: string
+  githubFrontend?: string
+  githubBackend?: string
+  githubFullStack?: string
+  stacks: string[] // ObjectId strings
+}
+
+// Projects API
+export const projectsApi = {
+  // Projects CRUD
+  getAll: () =>
+    apiRequest<ProjectData[]>('/project'),
+
+  getById: (id: string) =>
+    apiRequest<ProjectData>(`/project/${id}`),
+
+  create: (data: CreateProjectData) =>
+    apiRequest<ProjectData>('/project/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  createWithFile: (formData: FormData) =>
+    apiRequest<ProjectData>('/project/create', {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Remove Content-Type header to let browser set it for FormData
+    }),
+
+  update: (id: string, data: Partial<CreateProjectData>) =>
+    apiRequest<ProjectData>(`/project/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  updateWithFile: (id: string, formData: FormData) =>
+    apiRequest<ProjectData>(`/project/${id}`, {
+      method: 'PUT',
+      body: formData,
+      headers: {}, // Remove Content-Type header to let browser set it for FormData
+    }),
+
+  delete: (id: string) =>
+    apiRequest<null>(`/project/${id}`, {
+      method: 'DELETE',
+    }),
+}
+
+// User API Types
+export interface ChangePasswordData {
+  oldPassword: string
+  newPassword: string
+}
+
+// User API
+export const userApi = {
+  // Get current user profile
+  getMe: () =>
+    apiRequest<User>('/user/me'),
+
+  // Change password
+  changePassword: (data: ChangePasswordData) =>
+    apiRequest<null>('/user/change-password', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+}

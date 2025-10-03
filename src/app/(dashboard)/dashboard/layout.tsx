@@ -17,7 +17,6 @@ import {
   User,
   LogOut,
   ChevronDown,
-  BarChart3,
   Zap,
   UserCircle
 } from 'lucide-react'
@@ -55,12 +54,6 @@ const navigationItems = [
     href: '/dashboard/about',
     icon: UserCircle,
     description: 'Personal information'
-  },
-  {
-    name: 'Analytics',
-    href: '/dashboard/analytics',
-    icon: BarChart3,
-    description: 'Site performance metrics'
   },
   {
     name: 'Settings',

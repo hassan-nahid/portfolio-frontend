@@ -15,6 +15,8 @@ import {
   Save
 } from 'lucide-react'
 import Image from 'next/image'
+import { projectsApi, ProjectData, skillsApi, SkillData } from '@/lib/api'
+import { toast } from 'sonner'
 
 // Backend Category enum
 enum ProjectCategory {
@@ -23,34 +25,15 @@ enum ProjectCategory {
   DESKTOP = "DESKTOP"
 }
 
-interface Skill {
-  _id: string
-  skill: string
-  level: string
-  logo: string
-  category: string
-}
-
-interface Project {
-  _id: string
-  title: string
-  image: string
-  category: ProjectCategory
-  description: string
-  demoLink?: string
-  githubFrontend?: string
-  githubBackend?: string
-  githubFullStack?: string
-  stacks: string[]  // Array of ObjectIds as strings
-  createdAt: string
-  updatedAt: string
-}
+// Using API types
+type Project = ProjectData
 
 interface ProjectFormData {
   title: string
   image: string
   category: ProjectCategory
   description: string
+  features: string[]
   demoLink: string
   githubFrontend: string
   githubBackend: string
@@ -60,7 +43,7 @@ interface ProjectFormData {
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [skills, setSkills] = useState<Skill[]>([])
+  const [skills, setSkills] = useState<SkillData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<'all' | string>('all')
@@ -72,80 +55,104 @@ export default function ProjectsPage() {
     image: '',
     category: ProjectCategory.WEB,
     description: '',
+    features: [],
     demoLink: '',
     githubFrontend: '',
     githubBackend: '',
     githubFullStack: '',
     stacks: []
   })
+  const [newFeature, setNewFeature] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string>('')
+  const [imageChanged, setImageChanged] = useState(false)
 
   useEffect(() => {
     fetchProjects()
     fetchSkills()
   }, [])
 
-  const fetchProjects = async () => {
-    try {
-      // Mock data - replace with actual API call to /api/v1/project
-      const mockProjects: Project[] = [
-        {
-          _id: '1',
-          title: 'E-commerce Platform',
-          image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop',
-          category: ProjectCategory.WEB,
-          description: 'A full-stack e-commerce platform with modern UI/UX, payment integration, and admin dashboard.',
-          demoLink: 'https://demo.example.com',
-          githubFrontend: 'https://github.com/user/ecommerce-frontend',
-          githubBackend: 'https://github.com/user/ecommerce-backend',
-          githubFullStack: 'https://github.com/user/ecommerce',
-          stacks: ['t1', 't2', 't3'], // ObjectIds of skills
-          createdAt: '2024-01-15T10:30:00Z',
-          updatedAt: '2024-01-16T14:22:00Z'
-        },
-        {
-          _id: '2',
-          title: 'Task Management App',
-          image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=400&fit=crop',
-          category: ProjectCategory.WEB,
-          description: 'A collaborative task management application with real-time updates and team collaboration features.',
-          githubFullStack: 'https://github.com/user/task-manager',
-          stacks: ['t4', 't5', 't6'], // ObjectIds of skills
-          createdAt: '2024-01-10T09:15:00Z',
-          updatedAt: '2024-01-10T09:15:00Z'
-        }
-      ]
-      setProjects(mockProjects)
-    } catch (error) {
-      console.error('Failed to fetch projects:', error)
-    } finally {
-      setIsLoading(false)
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please select an image file')
+        return
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size must be less than 5MB')
+        return
+      }
+      
+      // Create preview URL
+      const preview = URL.createObjectURL(file)
+      setSelectedFile(file)
+      setPreviewUrl(preview)
+      setFormData(prev => ({ ...prev, image: preview }))
+      setImageChanged(true)
+    }
+  }
+
+  const clearImageFile = (markAsChanged = true) => {
+    if (previewUrl && previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(previewUrl)
+    }
+    setSelectedFile(null)
+    setPreviewUrl('')
+    setFormData(prev => ({ ...prev, image: '' }))
+    if (markAsChanged) {
+      setImageChanged(true)
     }
   }
 
   const fetchSkills = async () => {
     try {
-      // Mock data - replace with actual API call to /api/v1/skill
-      const mockSkills: Skill[] = [
-        { _id: 't1', skill: 'React', logo: '/tech/react.svg', level: 'Expert', category: 'Frontend' },
-        { _id: 't2', skill: 'Node.js', logo: '/tech/nodejs.svg', level: 'Advanced', category: 'Backend' },
-        { _id: 't3', skill: 'MongoDB', logo: '/tech/mongodb.svg', level: 'Intermediate', category: 'Database' },
-        { _id: 't4', skill: 'Next.js', logo: '/tech/nextjs.svg', level: 'Advanced', category: 'Frontend' },
-        { _id: 't5', skill: 'TypeScript', logo: '/tech/typescript.svg', level: 'Advanced', category: 'Language' },
-        { _id: 't6', skill: 'PostgreSQL', logo: '/tech/postgresql.svg', level: 'Intermediate', category: 'Database' }
-      ]
-      setSkills(mockSkills)
+      const response = await skillsApi.getAll()
+      if (response.success && response.data) {
+        setSkills(response.data)
+      } else {
+        toast.error('Failed to fetch skills')
+      }
     } catch (error) {
       console.error('Failed to fetch skills:', error)
+      toast.error('Failed to fetch skills')
     }
   }
+
+  const fetchProjects = async () => {
+    try {
+      const response = await projectsApi.getAll()
+      if (response.success && response.data) {
+        setProjects(response.data)
+      } else {
+        toast.error('Failed to fetch projects')
+      }
+    } catch (error) {
+      console.error('Failed to fetch projects:', error)
+      toast.error('Failed to fetch projects')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+
 
   const handleDeleteProject = async (id: string) => {
     if (confirm('Are you sure you want to delete this project?')) {
       try {
-        // API call to DELETE /api/v1/project/:id
-        setProjects(projects.filter(project => project._id !== id))
+        const response = await projectsApi.delete(id)
+        if (response.success) {
+          setProjects(projects.filter(project => project._id !== id))
+          toast.success('Project deleted successfully')
+        } else {
+          toast.error('Failed to delete project')
+        }
       } catch (error) {
         console.error('Failed to delete project:', error)
+        toast.error('Failed to delete project')
       }
     }
   }
@@ -154,27 +161,115 @@ export default function ProjectsPage() {
     e.preventDefault()
     try {
       if (isEditing && selectedProject) {
-        // API call to PUT /api/v1/project/:id
-        const updatedProject: Project = {
-          ...selectedProject,
-          ...formData,
-          updatedAt: new Date().toISOString()
+        // Update project
+        let response
+        if (selectedFile) {
+          // Handle file upload
+          const formDataWithFile = new FormData()
+          formDataWithFile.append('image', selectedFile)
+          formDataWithFile.append('title', formData.title)
+          formDataWithFile.append('category', formData.category)
+          formDataWithFile.append('description', formData.description)
+          formDataWithFile.append('features', JSON.stringify(formData.features))
+          formDataWithFile.append('demoLink', formData.demoLink)
+          formDataWithFile.append('githubFrontend', formData.githubFrontend)
+          formDataWithFile.append('githubBackend', formData.githubBackend)
+          formDataWithFile.append('githubFullStack', formData.githubFullStack)
+          formDataWithFile.append('stacks', JSON.stringify(formData.stacks))
+          
+          response = await projectsApi.updateWithFile(selectedProject._id, formDataWithFile)
+        } else {
+          // Handle URL update - only include image if it has changed or is explicitly provided
+          const updatePayload: Partial<ProjectFormData> = {
+            title: formData.title,
+            category: formData.category,
+            description: formData.description,
+            features: formData.features,
+            demoLink: formData.demoLink,
+            githubFrontend: formData.githubFrontend,
+            githubBackend: formData.githubBackend,
+            githubFullStack: formData.githubFullStack,
+            stacks: formData.stacks
+          }
+          
+          // Only include image if it has been changed by the user
+          if (imageChanged && formData.image && formData.image.trim() !== '') {
+            updatePayload.image = formData.image
+          }
+          
+          response = await projectsApi.update(selectedProject._id, updatePayload)
         }
-        setProjects(projects.map(p => p._id === selectedProject._id ? updatedProject : p))
+        
+        if (response.success && response.data) {
+          setProjects(projects.map(p => p._id === selectedProject._id ? response.data! : p))
+          toast.success('Project updated successfully')
+        } else {
+          toast.error('Failed to update project')
+        }
       } else {
-        // API call to POST /api/v1/project
-        const newProject: Project = {
-          _id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+        // Create new project
+        let response
+        if (selectedFile) {
+          // Handle file upload
+          const formDataWithFile = new FormData()
+          formDataWithFile.append('image', selectedFile)
+          formDataWithFile.append('title', formData.title)
+          formDataWithFile.append('category', formData.category)
+          formDataWithFile.append('description', formData.description)
+          formDataWithFile.append('features', JSON.stringify(formData.features))
+          formDataWithFile.append('demoLink', formData.demoLink)
+          formDataWithFile.append('githubFrontend', formData.githubFrontend)
+          formDataWithFile.append('githubBackend', formData.githubBackend)
+          formDataWithFile.append('githubFullStack', formData.githubFullStack)
+          formDataWithFile.append('stacks', JSON.stringify(formData.stacks))
+          
+          response = await projectsApi.createWithFile(formDataWithFile)
+        } else {
+          // Handle URL creation
+          response = await projectsApi.create({
+            title: formData.title,
+            image: formData.image,
+            category: formData.category,
+            description: formData.description,
+            features: formData.features,
+            demoLink: formData.demoLink,
+            githubFrontend: formData.githubFrontend,
+            githubBackend: formData.githubBackend,
+            githubFullStack: formData.githubFullStack,
+            stacks: formData.stacks
+          })
         }
-        setProjects([newProject, ...projects])
+        
+        if (response.success && response.data) {
+          setProjects([response.data, ...projects])
+          toast.success('Project created successfully')
+        } else {
+          toast.error('Failed to create project')
+        }
       }
       resetForm()
     } catch (error) {
       console.error('Failed to save project:', error)
+      toast.error('Failed to save project')
     }
+  }
+
+  // Features management functions
+  const addFeature = () => {
+    if (newFeature.trim() && !formData.features.includes(newFeature.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        features: [...prev.features, newFeature.trim()]
+      }))
+      setNewFeature('')
+    }
+  }
+
+  const removeFeature = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }))
   }
 
   const resetForm = () => {
@@ -183,15 +278,19 @@ export default function ProjectsPage() {
       image: '',
       category: ProjectCategory.WEB,
       description: '',
+      features: [],
       demoLink: '',
       githubFrontend: '',
       githubBackend: '',
       githubFullStack: '',
       stacks: []
     })
+    setNewFeature('')
+    clearImageFile()
     setShowModal(false)
     setIsEditing(false)
     setSelectedProject(null)
+    setImageChanged(false)
   }
 
   const openEditModal = (project: Project) => {
@@ -199,14 +298,18 @@ export default function ProjectsPage() {
     setFormData({
       title: project.title,
       image: project.image,
-      category: project.category,
+      category: project.category as ProjectCategory,
       description: project.description,
+      features: project.features || [],
       demoLink: project.demoLink || '',
       githubFrontend: project.githubFrontend || '',
       githubBackend: project.githubBackend || '',
       githubFullStack: project.githubFullStack || '',
-      stacks: project.stacks
+      stacks: project.stacks.map(skill => skill._id) // Extract ObjectIds from populated skills
     })
+    // Clear any existing file selection when editing
+    clearImageFile(false)
+    setImageChanged(false)
     setIsEditing(true)
     setShowModal(true)
   }
@@ -225,7 +328,7 @@ export default function ProjectsPage() {
     return matchesSearch && matchesCategory
   })
 
-  const categories = ['Full Stack', 'Frontend', 'Backend', 'Mobile', 'Desktop']
+  const categories = ['WEB', 'MOBILE', 'DESKTOP']
 
   const ProjectCard = ({ project }: { project: Project }) => (
     <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300">
@@ -244,6 +347,24 @@ export default function ProjectsPage() {
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-white mb-2">{project.title}</h3>
           <p className="text-gray-400 text-sm mb-3 line-clamp-2">{project.description}</p>
+          
+          {/* Features Display */}
+          {project.features && project.features.length > 0 && (
+            <div className="mb-3">
+              <div className="flex flex-wrap gap-1">
+                {project.features.slice(0, 3).map((feature, index) => (
+                  <span key={index} className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
+                    ✨ {feature}
+                  </span>
+                ))}
+                {project.features.length > 3 && (
+                  <span className="text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded">
+                    +{project.features.length - 3} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-2 ml-4">
           <button
@@ -278,7 +399,7 @@ export default function ProjectsPage() {
       </div>
 
       <div className="flex flex-wrap gap-2 mb-4">
-        {skills.filter(s => project.stacks.includes(s._id)).slice(0, 4).map((skill) => (
+        {project.stacks.slice(0, 4).map((skill) => (
           <div key={skill._id} className="flex items-center space-x-1 px-2 py-1 bg-white/5 rounded text-xs">
             <span className="text-gray-300">{skill.skill}</span>
           </div>
@@ -341,7 +462,7 @@ export default function ProjectsPage() {
         </div>
         <div className="flex items-center space-x-1">
           <Calendar className="w-3 h-3" />
-          <span>{new Date(project.createdAt).toLocaleDateString()}</span>
+          <span>{project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'N/A'}</span>
         </div>
       </div>
     </div>
@@ -391,16 +512,23 @@ export default function ProjectsPage() {
             className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
           />
         </div>
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-        >
-          <option value="all">All Categories</option>
-          {categories.map((category) => (
-            <option key={category} value={category}>{category}</option>
-          ))}
-        </select>
+        <div className="relative">
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="bg-gradient-to-r from-white/5 to-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/30 hover:border-white/30 transition-all duration-300 appearance-none cursor-pointer shadow-lg backdrop-blur-sm pr-10"
+          >
+            <option value="all" className="bg-gray-900/95 text-white">🎯 All Categories</option>
+            {categories.map((category) => (
+              <option key={category} value={category} className="bg-gray-900/95 text-white">📁 {category}</option>
+            ))}
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Projects Grid */}
@@ -451,16 +579,23 @@ export default function ProjectsPage() {
                 </div>
                 <div>
                   <label className="block text-white font-medium mb-2">Category</label>
-                  <select
-                    value={formData.category}
-                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as ProjectCategory }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                    required
-                  >
-                    <option value={ProjectCategory.WEB}>Web</option>
-                    <option value={ProjectCategory.MOBILE}>Mobile</option>
-                    <option value={ProjectCategory.DESKTOP}>Desktop</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={formData.category}
+                      onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as ProjectCategory }))}
+                      className="w-full bg-gradient-to-r from-white/5 to-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/30 hover:border-white/30 transition-all duration-300 appearance-none cursor-pointer shadow-lg backdrop-blur-sm pr-10"
+                      required
+                    >
+                      <option value={ProjectCategory.WEB} className="bg-gray-900/95 text-white">🌐 Web Application</option>
+                      <option value={ProjectCategory.MOBILE} className="bg-gray-900/95 text-white">📱 Mobile App</option>
+                      <option value={ProjectCategory.DESKTOP} className="bg-gray-900/95 text-white">💻 Desktop Application</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -475,15 +610,199 @@ export default function ProjectsPage() {
                 />
               </div>
 
+              {/* Features Section */}
               <div>
-                <label className="block text-white font-medium mb-2">Image URL</label>
-                <input
-                  type="url"
-                  value={formData.image}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  required
-                />
+                <label className="block text-white font-medium mb-2">Features</label>
+                <div className="space-y-3">
+                  {/* Add Feature Input */}
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={newFeature}
+                      onChange={(e) => setNewFeature(e.target.value)}
+                      placeholder="Add a project feature..."
+                      className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500"
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addFeature())}
+                    />
+                    <button
+                      type="button"
+                      onClick={addFeature}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  
+                  {/* Features List */}
+                  {formData.features.length > 0 && (
+                    <div className="space-y-2">
+                      {formData.features.map((feature, index) => (
+                        <div key={index} className="flex items-center space-x-2 bg-white/5 rounded-lg px-3 py-2">
+                          <span className="flex-1 text-white">✨ {feature}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeFeature(index)}
+                            className="text-red-400 hover:text-red-300 p-1"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {formData.features.length === 0 && (
+                    <div className="text-gray-400 text-sm italic">
+                      No features added yet. Add key features and highlights of your project.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white font-medium mb-2">Project Image</label>
+                <div className="space-y-4">
+                  {/* Current Image Display (Edit Mode Only - when project has existing image) */}
+                  {isEditing && selectedProject && selectedProject.image && !selectedFile && (
+                    <div className="bg-white/5 rounded-lg border border-white/10 p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm text-gray-400">Current Image</label>
+                        <span className="text-xs text-green-400 bg-green-500/20 px-2 py-1 rounded">Active</span>
+                      </div>
+                      <div className="relative w-full h-32 bg-white/5 rounded-lg overflow-hidden border border-white/10 mb-2">
+                        <Image
+                          src={selectedProject.image}
+                          alt="Current project image"
+                          fill
+                          className="object-cover"
+                          onError={() => {
+                            toast.error('Failed to load current image')
+                          }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-400 truncate">{selectedProject.image}</p>
+                    </div>
+                  )}
+
+                  {/* URL Input */}
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">
+                      {isEditing && selectedProject?.image ? 'New Image URL (optional)' : 'Image URL'}
+                    </label>
+                    <input
+                      type="url"
+                      value={selectedFile ? '' : formData.image}
+                      onChange={(e) => {
+                        if (!selectedFile) {
+                          setFormData(prev => ({ ...prev, image: e.target.value }))
+                          setImageChanged(true)
+                        }
+                      }}
+                      disabled={!!selectedFile}
+                      className={`w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 ${
+                        selectedFile ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                      placeholder={
+                        isEditing && selectedProject?.image 
+                          ? 'Enter new image URL to replace current image' 
+                          : 'https://example.com/image.jpg'
+                      }
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-1 border-t border-white/10"></div>
+                    <span className="text-gray-400 text-sm">OR</span>
+                    <div className="flex-1 border-t border-white/10"></div>
+                  </div>
+
+                  {/* File Upload */}
+                  <div>
+                    <label className="block text-sm text-gray-400 mb-1">
+                      {isEditing && selectedProject?.image ? 'Upload New Image (optional)' : 'Upload Image'}
+                    </label>
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageFileChange}
+                        className="hidden"
+                        id="project-image-upload"
+                      />
+                      <label
+                        htmlFor="project-image-upload"
+                        className="cursor-pointer bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-4 py-2 rounded-lg transition-colors flex items-center space-x-2 border border-blue-500/30"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>{isEditing && selectedProject?.image ? 'Replace with File' : 'Choose File'}</span>
+                      </label>
+                      {selectedFile && (
+                        <button
+                          type="button"
+                          onClick={() => clearImageFile()}
+                          className="text-red-400 hover:text-red-300 px-2 py-1 rounded transition-colors"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
+                    {isEditing && selectedProject?.image && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Select a file to replace the current image
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Preview - Only show when there's a new/changed image */}
+                  {(formData.image || previewUrl) && (selectedFile || (!isEditing || formData.image !== selectedProject?.image)) && (
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm text-gray-400">
+                          {selectedFile ? 'New Image Preview' : isEditing ? 'Updated Image Preview' : 'Image Preview'}
+                        </label>
+                        {(selectedFile || (isEditing && formData.image !== selectedProject?.image)) && (
+                          <span className="text-xs text-orange-400 bg-orange-500/20 px-2 py-1 rounded">
+                            {selectedFile ? 'File Selected' : 'URL Changed'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative w-full h-40 bg-white/5 rounded-lg overflow-hidden border border-white/10">
+                        <Image
+                          src={previewUrl || formData.image}
+                          alt="Project preview"
+                          fill
+                          className="object-cover"
+                          onError={() => {
+                            toast.error('Failed to load image')
+                          }}
+                        />
+                      </div>
+                      {isEditing && (
+                        <p className="text-xs text-orange-400 mt-1">
+                          This {selectedFile ? 'file' : 'URL'} will replace the current image when saved
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* File Info */}
+                  {selectedFile && (
+                    <div className="flex items-center space-x-2 bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2">
+                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                      <div className="flex-1">
+                        <p className="text-green-400 text-sm font-medium">{selectedFile.name}</p>
+                        <p className="text-xs text-gray-400">{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => clearImageFile()}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -531,14 +850,58 @@ export default function ProjectsPage() {
 
               <div>
                 <label className="block text-white font-medium mb-2">Skills (Stacks)</label>
-                <input
-                  type="text"
-                  value={formData.stacks.join(', ')}
-                  onChange={(e) => setFormData(prev => ({ ...prev, stacks: e.target.value.split(', ').filter(s => s.trim()) }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-                  placeholder="skill-id-1, skill-id-2, skill-id-3"
-                />
-                <p className="text-sm text-gray-400 mt-1">Enter skill IDs separated by commas</p>
+                <div className="relative">
+                  <select
+                    multiple
+                    value={formData.stacks}
+                    onChange={(e) => {
+                      const selectedOptions = Array.from(e.target.selectedOptions, option => option.value)
+                      setFormData(prev => ({ ...prev, stacks: selectedOptions }))
+                    }}
+                    className="w-full bg-gradient-to-r from-white/5 to-white/10 border border-white/20 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/30 hover:border-white/30 transition-all duration-300 cursor-pointer shadow-lg backdrop-blur-sm min-h-[120px]"
+                  >
+                    {skills.map((skill) => (
+                      <option 
+                        key={skill._id} 
+                        value={skill._id} 
+                        className="bg-gray-900/95 text-white py-2 hover:bg-blue-500/20"
+                      >
+                        💡 {skill.skill} ({skill.level})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <p className="text-sm text-gray-400 mt-1">Hold Ctrl/Cmd to select multiple skills</p>
+                
+                {/* Selected Skills Preview */}
+                {formData.stacks.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-sm text-gray-400 mb-2">Selected Skills:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.stacks.map((stackId) => {
+                        const skill = skills.find(s => s._id === stackId)
+                        return skill ? (
+                          <span
+                            key={stackId}
+                            className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm flex items-center space-x-1"
+                          >
+                            <span>💡 {skill.skill}</span>
+                            <button
+                              type="button"
+                              onClick={() => setFormData(prev => ({ 
+                                ...prev, 
+                                stacks: prev.stacks.filter(id => id !== stackId) 
+                              }))}
+                              className="text-blue-300 hover:text-red-400 ml-1"
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-end space-x-4 pt-6 border-t border-white/10">
@@ -588,10 +951,25 @@ export default function ProjectsPage() {
               <div className="space-y-4">
                 <p className="text-gray-300">{selectedProject.description}</p>
                 
+                {/* Features Display */}
+                {selectedProject.features && selectedProject.features.length > 0 && (
+                  <div>
+                    <h4 className="text-white font-semibold mb-2">Key Features</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {selectedProject.features.map((feature, index) => (
+                        <div key={index} className="flex items-center space-x-2 bg-white/5 rounded-lg px-3 py-2">
+                          <span className="text-green-400">✨</span>
+                          <span className="text-gray-300">{feature}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div>
                   <h4 className="text-white font-semibold mb-2">Skills Used</h4>
                   <div className="flex flex-wrap gap-2">
-                    {skills.filter(s => selectedProject.stacks.includes(s._id)).map((skill) => (
+                    {selectedProject.stacks.map((skill) => (
                       <span
                         key={skill._id}
                         className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm"
