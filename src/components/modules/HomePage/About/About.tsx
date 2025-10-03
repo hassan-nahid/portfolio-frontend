@@ -32,7 +32,7 @@ const About = () => {
                                 Skills & Story
                             </span>
                         </h2>
-                        <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed">
+                        <p className="text-gray-400 text-lg max-w-2xl mx-auto leading-relaxed px-4">
                             Interactive showcase of technical expertise and professional journey
                         </p>
                     </div>

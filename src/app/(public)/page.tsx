@@ -1,4 +1,5 @@
 import About from "@/components/modules/HomePage/About/About"
+import Education from "@/components/modules/HomePage/Education/Education"
 import HeroSection from "@/components/modules/HomePage/HeroSection/HeroSection"
 
 const HomePage = () => {
@@ -6,6 +7,7 @@ const HomePage = () => {
     <div>
       <HeroSection/>
       <About/>
+      <Education/>
     </div>
   )
 }
