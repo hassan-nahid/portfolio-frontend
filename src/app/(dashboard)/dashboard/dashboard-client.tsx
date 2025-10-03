@@ -1,4 +1,3 @@
-
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -21,8 +20,8 @@ import {
   Zap,
   UserCircle
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import PrivateRoute from '@/components/PrivateRoute'
+import { AuthProvider, useAuth } from '@/contexts/AuthServerContext'
+import { User as UserType } from '@/lib/auth-server'
 
 // Dashboard navigation items
 const navigationItems = [
@@ -101,34 +100,26 @@ const UserProfile = () => {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-gray-800/95 backdrop-blur-xl border border-gray-700/50 rounded-xl shadow-2xl overflow-hidden">
+        <div className="absolute bottom-full left-0 right-0 mb-2 bg-gray-800 border border-gray-700/50 rounded-xl shadow-2xl overflow-hidden z-50">
           <div className="p-3 border-b border-gray-700/50">
-            <p className="text-sm font-medium text-white">{user?.name || 'User'}</p>
-            <p className="text-xs text-gray-400">{user?.email || 'user@example.com'}</p>
+            <p className="text-sm font-semibold text-white">{user?.name}</p>
+            <p className="text-xs text-gray-400">{user?.email}</p>
           </div>
-          <div className="py-2">
+          <div className="p-1">
             <Link
-              href="/dashboard/profile"
-              className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors"
+              href="/dashboard/settings"
+              className="flex items-center space-x-3 p-3 text-gray-300 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors"
               onClick={() => setIsOpen(false)}
             >
               <User className="w-4 h-4" />
-              <span>Profile</span>
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              className="flex items-center space-x-3 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors"
-              onClick={() => setIsOpen(false)}
-            >
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
+              <span className="text-sm">Profile Settings</span>
             </Link>
             <button
-              className="flex items-center space-x-3 px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors w-full text-left"
               onClick={handleLogout}
+              className="flex items-center space-x-3 p-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors w-full text-left"
             >
               <LogOut className="w-4 h-4" />
-              <span>Sign out</span>
+              <span className="text-sm">Sign Out</span>
             </button>
           </div>
         </div>
@@ -143,20 +134,18 @@ const Sidebar = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
 
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile Overlay */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
       {/* Sidebar */}
-      <aside
-        className={`fixed left-0 top-0 h-full w-80 bg-gradient-to-b from-gray-900/95 to-black/95 backdrop-blur-xl border-r border-gray-700/50 z-50 transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
-      >
+      <aside className={`fixed left-0 top-0 z-50 h-full w-80 bg-gray-900/95 backdrop-blur-xl border-r border-gray-700/50 shadow-2xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        isOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         {/* Sidebar Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-700/50">
           <Link href="/" className="flex items-center space-x-3 group">
@@ -272,11 +261,12 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
   )
 }
 
-export default function DashboardLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+interface DashboardClientProps {
+  children: React.ReactNode
+  initialAuth: { user: UserType | null; isAuthenticated: boolean }
+}
+
+export default function DashboardClient({ children, initialAuth }: DashboardClientProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
 
@@ -292,7 +282,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <PrivateRoute>
+    <AuthProvider initialAuth={initialAuth}>
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
         {/* Background Effects */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -316,6 +306,6 @@ export default function DashboardLayout({
           </main>
         </div>
       </div>
-    </PrivateRoute>
+    </AuthProvider>
   )
 }

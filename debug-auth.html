@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Debug Tool</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        .debug-section { margin: 20px 0; padding: 15px; background: #2a2a2a; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; background: #4CAF50; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #45a049; }
+        .error { color: #ff6b6b; }
+        .success { color: #51cf66; }
+        .info { color: #74c0fc; }
+        pre { background: #333; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Portfolio Auth Debug Tool</h1>
+    
+    <div class="debug-section">
+        <h3>Token Status</h3>
+        <button onclick="checkToken()">Check Token</button>
+        <button onclick="clearToken()">Clear Token</button>
+        <div id="tokenStatus"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>API Test</h3>
+        <button onclick="testMeEndpoint()">Test /me Endpoint</button>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="apiStatus"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>Debug Logs</h3>
+        <button onclick="clearLogs()">Clear Logs</button>
+        <div id="logs"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api/v1';
+        
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            logs.appendChild(logEntry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('token');
+            const status = document.getElementById('tokenStatus');
+            
+            if (token) {
+                status.innerHTML = `
+                    <div class="success">✅ Token found</div>
+                    <pre>${token.substring(0, 50)}...</pre>
+                `;
+                log('Token found in localStorage', 'success');
+            } else {
+                status.innerHTML = '<div class="error">❌ No token found</div>';
+                log('No token found in localStorage', 'error');
+            }
+        }
+
+        function clearToken() {
+            localStorage.removeItem('token');
+            document.getElementById('tokenStatus').innerHTML = '<div class="info">🧹 Token cleared</div>';
+            log('Token cleared from localStorage', 'info');
+        }
+
+        async function testMeEndpoint() {
+            const status = document.getElementById('apiStatus');
+            const token = localStorage.getItem('token');
+            
+            if (!token) {
+                status.innerHTML = '<div class="error">❌ No token available for /me test</div>';
+                log('Cannot test /me endpoint - no token', 'error');
+                return;
+            }
+
+            try {
+                log('Testing /me endpoint...', 'info');
+                const response = await fetch(`${API_BASE}/user/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    status.innerHTML = `
+                        <div class="success">✅ /me endpoint successful</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`/me endpoint success: ${data.data.name}`, 'success');
+                } else {
+                    status.innerHTML = `
+                        <div class="error">❌ /me endpoint failed</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`/me endpoint failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Network error: ${error.message}</div>`;
+                log(`/me endpoint error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const status = document.getElementById('apiStatus');
+            
+            // You can modify these credentials for testing
+            const email = prompt('Enter email:');
+            const password = prompt('Enter password:');
+            
+            if (!email || !password) {
+                log('Login test cancelled', 'info');
+                return;
+            }
+
+            try {
+                log('Testing login...', 'info');
+                const response = await fetch(`${API_BASE}/user/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    localStorage.setItem('token', data.data.accessToken);
+                    status.innerHTML = `
+                        <div class="success">✅ Login successful</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`Login success: ${data.data.user.name}`, 'success');
+                } else {
+                    status.innerHTML = `
+                        <div class="error">❌ Login failed</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                    log(`Login failed: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                status.innerHTML = `<div class="error">❌ Network error: ${error.message}</div>`;
+                log(`Login error: ${error.message}`, 'error');
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // Initialize
+        checkToken();
+        log('Auth debug tool loaded', 'success');
+    </script>
+</body>
+</html>

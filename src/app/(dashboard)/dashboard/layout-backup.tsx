@@ -1,74 +1,7 @@
 
-'use client'
-
-import { useState, useEffect } from 'react'
-import { usePathname } from 'next/navigation'
-import Link from 'next/link'
-import Image from 'next/image'
-import {
-  LayoutDashboard,
-  FileText,
-  FolderOpen,
-  Settings,
-  Bell,
-  Search,
-  Menu,
-  X,
-  User,
-  LogOut,
-  ChevronDown,
-  BarChart3,
-  Zap,
-  UserCircle
-} from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
-import PrivateRoute from '@/components/PrivateRoute'
-
-// Dashboard navigation items
-const navigationItems = [
-  {
-    name: 'Dashboard',
-    href: '/dashboard',
-    icon: LayoutDashboard,
-    description: 'Overview and analytics'
-  },
-  {
-    name: 'Blog Posts',
-    href: '/dashboard/blogs',
-    icon: FileText,
-    description: 'Manage blog content'
-  },
-  {
-    name: 'Projects',
-    href: '/dashboard/projects',
-    icon: FolderOpen,
-    description: 'Portfolio projects'
-  },
-  {
-    name: 'Skills',
-    href: '/dashboard/skills',
-    icon: Zap,
-    description: 'Manage skills and expertise'
-  },
-  {
-    name: 'About',
-    href: '/dashboard/about',
-    icon: UserCircle,
-    description: 'Personal information'
-  },
-  {
-    name: 'Analytics',
-    href: '/dashboard/analytics',
-    icon: BarChart3,
-    description: 'Site performance metrics'
-  },
-  {
-    name: 'Settings',
-    href: '/dashboard/settings',
-    icon: Settings,
-    description: 'Account and preferences'
-  }
-]
+import { checkAuthServer } from '@/lib/auth-server'
+import { redirect } from 'next/navigation'
+import DashboardClient from './dashboard-client'
 
 // User profile component
 const UserProfile = () => {
@@ -272,50 +205,27 @@ const Header = ({ onMenuClick }: { onMenuClick: () => void }) => {
   )
 }
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isMounted, setIsMounted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
-
-  const closeSidebar = () => setSidebarOpen(false)
-  const openSidebar = () => setSidebarOpen(true)
-
-  if (!isMounted) {
-    return null // Prevent hydration mismatch
+  // Server-side authentication check
+  console.log('🔍 Server: Checking authentication for dashboard...')
+  const authResult = await checkAuthServer()
+  
+  // If not authenticated, redirect to login
+  if (!authResult.isAuthenticated) {
+    console.log('❌ Server: User not authenticated, redirecting to login')
+    redirect('/auth/login')
   }
 
+  console.log('✅ Server: User authenticated:', authResult.user?.name)
+
+  // Pass the authenticated user data to the client component
   return (
-    <PrivateRoute>
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-        {/* Background Effects */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/3 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/3 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
-        </div>
-
-        {/* Sidebar */}
-        <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
-
-        {/* Main Content */}
-        <div className="lg:ml-80 relative z-10">
-          {/* Header */}
-          <Header onMenuClick={openSidebar} />
-
-          {/* Page Content */}
-          <main className="p-6">
-            <div className="max-w-7xl mx-auto">
-              {children}
-            </div>
-          </main>
-        </div>
-      </div>
-    </PrivateRoute>
+    <DashboardClient initialAuth={authResult}>
+      {children}
+    </DashboardClient>
   )
 }
