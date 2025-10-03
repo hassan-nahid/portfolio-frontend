@@ -7,8 +7,6 @@ const About = () => {
     return (
         <div className="py-16">
             {/* About Section Header */}
-
-
             {/* About Me Section + Skill Section */}
             <div className="relative overflow-hidden">
                 {/* Background Effects */}
