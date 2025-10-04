@@ -114,13 +114,13 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                                 {/* Professional Profile Card */}
-                                <div className="lg:col-span-1 relative group">
-                                    <div className="relative group">
+                                <div className="lg:col-span-1 relative group h-full">
+                                    <div className="relative group h-full">
                                         {/* Glow Effect */}
                                         <div className="absolute -inset-4 bg-gradient-to-r from-cyan-600/20 via-blue-600/20 to-purple-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                                         
                                         {/* Profile Container */}
-                                        <div className="relative bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-cyan-500/30 transition-all duration-500">
+                                        <div className="relative h-full bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-cyan-500/30 transition-all duration-500 flex flex-col">
                                             <div className="flex items-center space-x-3 mb-6">
                                                 <div className="w-2 h-8 bg-gradient-to-b from-cyan-500 to-blue-500 rounded-full"></div>
                                                 <h3 className="text-xl font-bold text-white">Profile</h3>
@@ -128,8 +128,8 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                                             </div>
                                             
                                             {/* Profile Content */}
-                                            <div className="text-center">
-                                                <div className="relative w-full max-w-xs mx-auto">
+                                            <div className="text-center flex flex-col flex-grow">
+                                                <div className="relative w-full max-w-xs mx-auto flex-shrink-0">
                                                     <div className="relative w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-white/10 group-hover:border-cyan-400/30 transition-all duration-500 shadow-2xl">
                                                         <Image
                                                             src={aboutData?.photo || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"}
@@ -143,7 +143,7 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                                                     <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full border-4 border-gray-900 animate-pulse"></div>
                                                 </div>
                                                 
-                                                <div className="mt-6 space-y-4">
+                                                <div className="mt-6 space-y-4 flex-shrink-0">
                                                     <div>
                                                         <h4 className="text-2xl font-bold text-white mb-2">{aboutData?.name || 'Hassan Nahid'}</h4>
                                                         <p className="text-cyan-400 font-medium text-sm tracking-wide">Full Stack Developer</p>
@@ -162,13 +162,13 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                                                             <span>Available</span>
                                                         </div>
                                                     </div>
-                                                    
-                                                    {/* Bio Section */}
-                                                    <div className="mt-4 pt-4 border-t border-gray-700/50">
-                                                        <p className="text-gray-300 text-sm leading-relaxed">
-                                                            &ldquo;{aboutData?.bio || 'I dissect intricate user experience challenges to engineer integrity-focused solutions that resonate with billions of users.'}&rdquo;
-                                                        </p>
-                                                    </div>
+                                                </div>
+                                                
+                                                {/* Bio Section - Grows to fill available space */}
+                                                <div className="mt-4 pt-4 border-t border-gray-700/50 flex-grow flex items-end">
+                                                    <p className="text-gray-300 text-sm leading-relaxed w-full">
+                                                        &ldquo;{aboutData?.bio || 'I dissect intricate user experience challenges to engineer integrity-focused solutions that resonate with billions of users.'}&rdquo;
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -176,20 +176,20 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                                 </div>
 
                                 {/* Experience Card */}
-                                <div className="lg:col-span-1 relative">
-                                    <div className="relative group">
+                                <div className="lg:col-span-1 relative h-full">
+                                    <div className="relative group h-full">
                                         {/* Glow Effect */}
                                         <div className="absolute -inset-4 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-blue-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                                         
                                         {/* Experience Container */}
-                                        <div className="relative bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-blue-500/30 transition-all duration-500">
+                                        <div className="relative h-full bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-blue-500/30 transition-all duration-500 flex flex-col">
                                             <div className="flex items-center space-x-3 mb-6">
                                                 <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
                                                 <h3 className="text-xl font-bold text-white">Experience</h3>
                                                 <div className="flex-1 h-px bg-gradient-to-r from-blue-500/50 to-transparent"></div>
                                             </div>
                                             
-                                            <div className="text-center mb-6">
+                                            <div className="text-center mb-6 flex-shrink-0">
                                                 <div className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                                                     <NumberTicker value={aboutData?.experience || 1} suffix={"+"} />
                                                 </div>
@@ -198,8 +198,8 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                                                 <p className="text-gray-400 mt-4 text-sm">Building amazing digital experiences</p>
                                             </div>
                                             
-                                            {/* Experience Details */}
-                                            <div className="space-y-4">
+                                            {/* Experience Details - Grows to fill space */}
+                                            <div className="space-y-4 flex-grow flex flex-col justify-center">
                                                 <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-4">
                                                     <h5 className="text-white font-semibold text-sm mb-2">Frontend Development</h5>
                                                     <p className="text-gray-400 text-xs leading-relaxed">React, Next.js, TypeScript, Tailwind CSS</p>
@@ -220,20 +220,20 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                                 </div>
 
                                 {/* Projects Card */}
-                                <div className="lg:col-span-1 relative">
-                                    <div className="relative group">
+                                <div className="lg:col-span-1 relative h-full">
+                                    <div className="relative group h-full">
                                         {/* Glow Effect */}
                                         <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-purple-600/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                                         
                                         {/* Projects Container */}
-                                        <div className="relative bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-purple-500/30 transition-all duration-500">
+                                        <div className="relative h-full bg-gradient-to-br from-gray-900/50 to-black/30 backdrop-blur-sm border border-gray-700/50 rounded-3xl p-8 hover:border-purple-500/30 transition-all duration-500 flex flex-col">
                                             <div className="flex items-center space-x-3 mb-6">
                                                 <div className="w-2 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
                                                 <h3 className="text-xl font-bold text-white">Projects</h3>
                                                 <div className="flex-1 h-px bg-gradient-to-r from-purple-500/50 to-transparent"></div>
                                             </div>
                                             
-                                            <div className="text-center mb-6">
+                                            <div className="text-center mb-6 flex-shrink-0">
                                                 <div className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                                                     <NumberTicker value={aboutData?.projects || 40} suffix={"+"} />
                                                 </div>
@@ -242,8 +242,8 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                                                 <p className="text-gray-400 mt-4 text-sm">Successful deliveries & happy clients</p>
                                             </div>
                                             
-                                            {/* Project Categories */}
-                                            <div className="space-y-4">
+                                            {/* Project Categories - Grows to fill space */}
+                                            <div className="space-y-4 flex-grow flex flex-col justify-center">
                                                 <div className="bg-gradient-to-r from-purple-900/20 to-pink-900/20 backdrop-blur-sm border border-purple-500/20 rounded-2xl p-4">
                                                     <h5 className="text-white font-semibold text-sm mb-2">Web Applications</h5>
                                                     <p className="text-gray-400 text-xs leading-relaxed">E-commerce, Dashboards, SaaS platforms</p>
