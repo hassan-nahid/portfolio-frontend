@@ -4,7 +4,7 @@ import Contact from "@/components/modules/HomePage/Contact/Contact"
 import Education from "@/components/modules/HomePage/Education/Education"
 import HeroSection from "@/components/modules/HomePage/HeroSection/HeroSection"
 import Project from "@/components/modules/HomePage/Project/Project"
-import { skillApi, aboutApi, Skill, AboutData } from "@/lib/api"
+import { skillApi, aboutApi, projectsApi, Skill, AboutData, ProjectData } from "@/lib/api"
 
 // Static site generation - fetch skills at build time
 export async function generateStaticParams() {
@@ -127,19 +127,41 @@ export async function getSoftSkills(): Promise<string[]> {
   }
 }
 
+// Static site generation - fetch projects data at build time
+export async function getProjectsData(): Promise<ProjectData[]> {
+  try {
+    const response = await projectsApi.getAll()
+    
+    if (response.success && response.data) {
+      console.log('Projects data fetched successfully:', response.data.length, 'projects')
+      return response.data
+    }
+    
+    console.error('Failed to fetch projects data:', response.message)
+    return []
+  } catch (error) {
+    console.error('Error fetching projects data:', error)
+    return []
+  }
+}
+
+// ISR: Revalidate every 60 seconds
+export const revalidate = 60
+
 const HomePage = async () => {
-  // Fetch all data at build time for SSG
-  const [{ skills, skillNames }, aboutData, softSkills] = await Promise.all([
+  // Fetch all data at build time for SSG/ISR
+  const [{ skills, skillNames }, aboutData, softSkills, projects] = await Promise.all([
     getSkillsData(),
     getAboutData(),
-    getSoftSkills()
+    getSoftSkills(),
+    getProjectsData()
   ])
   
   return (
     <div>
       <HeroSection skills={skillNames} />
       <About skills={skills} aboutData={aboutData} softSkills={softSkills} />
-      <Project/>
+      <Project projects={projects} />
       <Education/>
       <Contact/>
       <BlogSection/>

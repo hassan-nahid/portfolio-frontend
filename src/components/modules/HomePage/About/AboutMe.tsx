@@ -22,7 +22,7 @@ const AboutMe = ({ aboutData, softSkills = [] }: AboutMeProps) => {
         
         {/* Decorative Elements */}
         <div className="absolute top-4 right-4 w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
-        <div className="absolute top-6 right-8 w-1 h-1 bg-purple-500 rounded-full animate-ping" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-6 right-8 w-1 h-1 bg-purple-500 rounded-full animate-ping [animation-delay:1s]"></div>
         
         {/* Header Section */}
         <div className="mb-6">
@@ -77,11 +77,10 @@ const AboutMe = ({ aboutData, softSkills = [] }: AboutMeProps) => {
         {/* Skills Highlights - Soft Skills from Backend */}
         <div className="mt-6 pt-6 border-t border-gray-700/50">
           <div className="flex flex-wrap gap-2">
-            {(softSkills.length > 0 ? softSkills : ['Problem Solving', 'Team Collaboration', 'Performance Optimization', 'Security']).map((skill, index) => (
+            {(softSkills.length > 0 ? softSkills : ['Problem Solving', 'Team Collaboration', 'Performance Optimization', 'Security']).map((skill) => (
               <span 
                 key={skill}
                 className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-gray-800 to-gray-700 text-gray-300 rounded-full border border-gray-600/50 hover:border-blue-500/30 hover:text-white transition-all duration-300"
-                style={{animationDelay: `${index * 0.1}s`}}
               >
                 {skill}
               </span>
@@ -93,8 +92,8 @@ const AboutMe = ({ aboutData, softSkills = [] }: AboutMeProps) => {
         <div className="absolute bottom-4 right-4 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
           <div className="flex items-center space-x-1">
             <div className="w-1 h-1 bg-blue-500 rounded-full animate-bounce"></div>
-            <div className="w-1 h-1 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-            <div className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+            <div className="w-1 h-1 bg-purple-500 rounded-full animate-bounce [animation-delay:0.1s]"></div>
+            <div className="w-1 h-1 bg-cyan-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
           </div>
         </div>
       </div>

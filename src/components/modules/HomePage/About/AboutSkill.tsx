@@ -606,7 +606,7 @@ export default function AboutSkill({ skills = [] }: AboutSkillProps) {
         {/* Central "Code" Icon with enhanced glow */}
         <div className="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center z-10 relative shadow-2xl">
           <div className="absolute inset-0 rounded-full bg-cyan-500/30 blur-xl animate-pulse"></div>
-          <div className="absolute inset-0 rounded-full bg-purple-500/20 blur-2xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute inset-0 rounded-full bg-purple-500/20 blur-2xl animate-pulse [animation-delay:1s]"></div>
           <div className="relative z-10">
             <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="url(#gradient)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <defs>

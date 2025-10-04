@@ -22,7 +22,7 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                 {/* Background Effects */}
                 <div className="absolute inset-0">
                     <div className="absolute top-1/3 left-1/4 w-72 h-72 bg-blue-500/5 rounded-full blur-3xl animate-pulse"></div>
-                    <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+                    <div className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse [animation-delay:2s]"></div>
                 </div>
 
                 {/* Section Header */}
@@ -32,7 +32,7 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                             <div className="h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent w-16 animate-pulse"></div>
                             <div className="w-3 h-3 bg-blue-500 rounded-full animate-ping"></div>
                             <span className="text-gray-400 font-light tracking-[0.3em] text-sm uppercase">Deep Dive</span>
-                            <div className="w-3 h-3 bg-purple-500 rounded-full animate-ping" style={{animationDelay: '0.5s'}}></div>
+                            <div className="w-3 h-3 bg-purple-500 rounded-full animate-ping [animation-delay:0.5s]"></div>
                             <div className="h-px bg-gradient-to-r from-transparent via-purple-500 to-transparent w-16 animate-pulse"></div>
                         </div>
                         <h2 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
@@ -273,8 +273,8 @@ const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
                     <div className="flex items-center space-x-4">
                         <div className="w-8 h-px bg-gradient-to-r from-transparent to-blue-500 animate-pulse"></div>
                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                        <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
+                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                        <div className="w-2 h-2 bg-cyan-500 rounded-full animate-bounce [animation-delay:0.4s]"></div>
                         <div className="w-8 h-px bg-gradient-to-l from-transparent to-purple-500 animate-pulse"></div>
                     </div>
                 </div>
