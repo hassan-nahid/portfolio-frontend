@@ -59,12 +59,23 @@ export async function apiRequest<T = unknown>(
   try {
     console.log('API Request:', { url, method: defaultOptions.method })
     const response = await fetch(url, defaultOptions)
+    
+    console.log('Response status:', response.status, response.statusText)
+    
+    // Check if response has JSON content
+    const contentType = response.headers.get('content-type')
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Response is not JSON:', contentType)
+      throw new ApiError(response.status, 'Server did not return JSON response')
+    }
+    
     const data = await response.json()
 
     console.log('API Response:', { 
       status: response.status, 
       success: data.success, 
-      endpoint: endpoint 
+      endpoint: endpoint,
+      dataKeys: Object.keys(data || {})
     })
 
     if (!response.ok) {
@@ -91,6 +102,29 @@ export interface User {
   role: 'OWNER' | 'ADMIN' | 'USER'
   createdAt: string
   updatedAt: string
+}
+
+// Skill-related interfaces
+export interface SkillCategory {
+  _id: string
+  title: string
+  __v: number
+}
+
+export interface Skill {
+  _id: string
+  skill: string
+  level: string
+  logo: string
+  category: SkillCategory
+  __v: number
+}
+
+export interface SkillListResponse {
+  statusCode: number
+  success: boolean
+  message: string
+  data: Skill[]
 }
 
 // Health check function
@@ -361,4 +395,173 @@ export const userApi = {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
+}
+
+// Blog API Types
+export interface BlogData {
+  _id: string
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  featuredImage?: string
+  author: {
+    _id: string
+    name: string
+    email: string
+    avatar?: string
+  }
+  category: 'Technology' | 'Web Development' | 'Programming' | 'Tutorial' | 'Personal' | 'Other'
+  tags: string[]
+  status: 'draft' | 'published' | 'archived'
+  isFeature: boolean
+  viewCount: number
+  commentCount: number
+  comments: BlogCommentData[]
+  publishedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface BlogCommentData {
+  _id?: string
+  author: string
+  email: string
+  website?: string
+  content: string
+  isApproved: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateBlogData {
+  title: string
+  excerpt: string
+  content: string
+  category: string
+  tags: string[]
+  status?: string
+  isFeature?: boolean
+}
+
+export interface BlogQueryParams {
+  page?: number
+  limit?: number
+  searchTerm?: string
+  category?: string
+  status?: string
+  featured?: boolean
+}
+
+export interface BlogListResponse {
+  result: BlogData[]
+  meta: {
+    page: number
+    limit: number
+    total: number
+    totalPage: number
+  }
+}
+
+// Blog API
+export const blogApi = {
+  // Admin endpoints
+  getAllForAdmin: (params?: BlogQueryParams) => {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const queryString = searchParams.toString()
+    return apiRequest<BlogListResponse>(`/blog/admin${queryString ? `?${queryString}` : ''}`)
+  },
+
+  getByIdForAdmin: (id: string) =>
+    apiRequest<BlogData>(`/blog/admin/${id}`),
+
+  create: (formData: FormData) =>
+    apiRequest<BlogData>('/blog/create', {
+      method: 'POST',
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    }),
+
+  update: (id: string, formData: FormData) =>
+    apiRequest<BlogData>(`/blog/${id}`, {
+      method: 'PATCH',
+      body: formData,
+      headers: {}, // Let browser set Content-Type for FormData
+    }),
+
+  delete: (id: string) =>
+    apiRequest<null>(`/blog/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Comment management
+  manageComment: (commentId: string, action: 'approve' | 'reject') =>
+    apiRequest<BlogCommentData>(`/blog/comments/${commentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action }),
+    }),
+
+  // Public endpoints
+  getPublic: (params?: BlogQueryParams) => {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const queryString = searchParams.toString()
+    return apiRequest<BlogListResponse>(`/blog${queryString ? `?${queryString}` : ''}`)
+  },
+
+  getByIdentifier: (identifier: string) =>
+    apiRequest<BlogData>(`/blog/${identifier}`),
+
+  addComment: (blogId: string, commentData: { author: string; email: string; website?: string; content: string }) =>
+    apiRequest<BlogCommentData>(`/blog/${blogId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(commentData),
+    }),
+
+  getComments: (blogId: string, params?: { page?: number; limit?: number }) => {
+    const searchParams = new URLSearchParams()
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined) {
+          searchParams.append(key, value.toString())
+        }
+      })
+    }
+    const queryString = searchParams.toString()
+    return apiRequest<{
+      result: BlogCommentData[]
+      meta: {
+        page: number
+        limit: number
+        total: number
+        totalPage: number
+      }
+    }>(`/blog/${blogId}/comments${queryString ? `?${queryString}` : ''}`)
+  },
+}
+
+// Skill API
+export const skillApi = {
+  getAll: async (): Promise<Skill[]> => {
+    try {
+      const response = await apiRequest<Skill[]>('/skill')
+      return response.data || []
+    } catch (error) {
+      console.error('Failed to fetch skills:', error)
+      return []
+    }
+  }
 }

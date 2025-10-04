@@ -1,34 +1,34 @@
 "use client";
 import React from "react"
 
+// Props interface for HeroSection
+interface HeroSectionProps {
+    skills?: string[]
+}
+
 // Self-contained SVG icon for the "Welcome" badge
 const DotIcon = () => (
     <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="4" cy="4" r="4" fill="currentColor" />
     </svg>
 );
-    const downloadCV = () => {
-        const pdfURL = 'https://drive.google.com/uc?export=download&id=1dCXijZ18Ss9QlU7l6llUEayyqZbGgZpa';
-        const anchor = document.createElement('a');
-        anchor.href = pdfURL;
-        anchor.download = 'Full_Stack_Developer_Resume_of_Hassan_Nahid.pdf';
-        anchor.click();
-    };
 
+const downloadCV = () => {
+    const pdfURL = 'https://drive.google.com/uc?export=download&id=1dCXijZ18Ss9QlU7l6llUEayyqZbGgZpa';
+    const anchor = document.createElement('a');
+    anchor.href = pdfURL;
+    anchor.download = 'Full_Stack_Developer_Resume_of_Hassan_Nahid.pdf';
+    anchor.click();
+};
 
-// The data for the code snippet
-const coderData = {
+// Create coder data with dynamic skills
+const createCoderData = (skills: string[]) => ({
     name: 'Hassan Nahid',
     role: 'Full Stack Developer',
     seniority: 'Mid-Level',
     location: 'Bangladesh',
-    skills: [
-        'React', 'Next.js', 'JavaScript', 'TypeScript',
-        'TailwindCSS', 'CSS', 'Figma', 'GitHub', 'HTML',
-        'Astro', 'Node.js', 'Express', 'MongoDB', 'Firebase',
-        'Git'
-    ],
-};
+    skills: skills,
+});
 
 const socialIcons = [
     {
@@ -123,7 +123,9 @@ const socialIcons = [
     },
 ];
 // The styled code window component
-const CoderProfileCard = () => {
+const CoderProfileCard = ({ skills }: { skills: string[] }) => {
+    const coderData = createCoderData(skills);
+    
     return (
         // Main container with gradient, border, and shadow - theme-aware
         <div className="w-full mx-auto bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-[#000000] dark:to-[#0a0d37] border-zinc-300 dark:border-[#1b2c68a0] relative rounded-lg border shadow-lg">
@@ -194,7 +196,7 @@ const CoderProfileCard = () => {
                             <span className="text-zinc-800 dark:text-white">skills:</span>
                             <span className="text-zinc-600 dark:text-gray-400">{'['}</span>
                             <div className="pl-6 flex flex-wrap">
-                                {coderData.skills.map((skill, index) => (
+                                {coderData.skills.map((skill: string, index: number) => (
                                     <span key={skill} className="mr-1">
                                         <span className="text-zinc-600 dark:text-gray-400">&#39;</span>
                                         <span className="text-cyan-600 dark:text-cyan-400">{skill}</span>
@@ -223,7 +225,7 @@ const CoderProfileCard = () => {
 };
 
 // Main component
-const HeroSection = () => {
+const HeroSection = ({ skills = [] }: HeroSectionProps) => {
     return (
         <div className="min-h-screen w-full relative flex items-center justify-center font-sans p-4 sm:p-6 lg:p-6">
             {/* Light mode Azure Depths */}
@@ -295,7 +297,7 @@ const HeroSection = () => {
 
                     {/* Right Column: Code Editor */}
                     <div className="order-1 lg:order-2 animate-fade-in-up">
-                        <CoderProfileCard />
+                        <CoderProfileCard skills={skills} />
                     </div>
 
                 </div>

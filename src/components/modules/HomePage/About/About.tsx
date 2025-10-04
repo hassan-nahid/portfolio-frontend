@@ -2,8 +2,18 @@ import AboutMe from "./AboutMe"
 import AboutSkill from "./AboutSkill"
 import Image from "next/image"
 import NumberTicker from "./Number"
+import { Skill, AboutData } from "@/lib/api"
 
-const About = () => {
+interface AboutProps {
+  skills?: Skill[]
+  aboutData?: AboutData | null
+  softSkills?: string[]
+}
+
+
+const About = ({ skills = [], aboutData, softSkills = [] }: AboutProps) => {
+    console.log(aboutData)
+
     return (
         <div className="py-16" id="about">
             {/* About Section Header */}
@@ -57,7 +67,7 @@ const About = () => {
                                         
                                         {/* Interactive Skills Display */}
                                         <div className="relative min-h-[400px] flex items-center justify-center">
-                                            <AboutSkill />
+                                            <AboutSkill skills={skills} />
                                         </div>
                                         
                                         {/* Skills Footer */}
@@ -88,7 +98,7 @@ const About = () => {
                                             <h3 className="text-xl font-bold text-white">About Me</h3>
                                             <div className="flex-1 h-px bg-gradient-to-r from-purple-500/50 to-transparent"></div>
                                         </div>
-                                        <AboutMe />
+                                        <AboutMe aboutData={aboutData} softSkills={softSkills} />
                                     </div>
                                 </div>
                             </div>
@@ -122,8 +132,8 @@ const About = () => {
                                                 <div className="relative w-full max-w-xs mx-auto">
                                                     <div className="relative w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-white/10 group-hover:border-cyan-400/30 transition-all duration-500 shadow-2xl">
                                                         <Image
-                                                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"
-                                                            alt="Hassan Nahid - Full Stack Developer"
+                                                            src={aboutData?.photo || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face"}
+                                                            alt={`${aboutData?.name || 'Hassan Nahid'} - Full Stack Developer`}
                                                             width={160}
                                                             height={160}
                                                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -135,7 +145,7 @@ const About = () => {
                                                 
                                                 <div className="mt-6 space-y-4">
                                                     <div>
-                                                        <h4 className="text-2xl font-bold text-white mb-2">Hassan Nahid</h4>
+                                                        <h4 className="text-2xl font-bold text-white mb-2">{aboutData?.name || 'Hassan Nahid'}</h4>
                                                         <p className="text-cyan-400 font-medium text-sm tracking-wide">Full Stack Developer</p>
                                                     </div>
                                                     
@@ -156,7 +166,7 @@ const About = () => {
                                                     {/* Bio Section */}
                                                     <div className="mt-4 pt-4 border-t border-gray-700/50">
                                                         <p className="text-gray-300 text-sm leading-relaxed">
-                                                            &ldquo;I dissect intricate user experience challenges to engineer integrity-focused solutions that resonate with billions of users.&rdquo;
+                                                            &ldquo;{aboutData?.bio || 'I dissect intricate user experience challenges to engineer integrity-focused solutions that resonate with billions of users.'}&rdquo;
                                                         </p>
                                                     </div>
                                                 </div>
@@ -181,7 +191,7 @@ const About = () => {
                                             
                                             <div className="text-center mb-6">
                                                 <div className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                                                    <NumberTicker value={1} suffix={"+"} />
+                                                    <NumberTicker value={aboutData?.experience || 1} suffix={"+"} />
                                                 </div>
                                                 <h4 className="text-xl font-semibold text-gray-300 group-hover:text-white transition-colors duration-300 mb-4">Years of Experience</h4>
                                                 <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -225,7 +235,7 @@ const About = () => {
                                             
                                             <div className="text-center mb-6">
                                                 <div className="text-5xl md:text-6xl font-black mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                                    <NumberTicker value={40} suffix={"+"} />
+                                                    <NumberTicker value={aboutData?.projects || 40} suffix={"+"} />
                                                 </div>
                                                 <h4 className="text-xl font-semibold text-gray-300 group-hover:text-white transition-colors duration-300 mb-4">Completed Projects</h4>
                                                 <div className="w-20 h-1 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mx-auto opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>

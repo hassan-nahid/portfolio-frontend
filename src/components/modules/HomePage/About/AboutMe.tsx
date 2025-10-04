@@ -1,4 +1,17 @@
-const AboutMe = () => {
+import { AboutData } from "@/lib/api"
+
+interface AboutMeProps {
+  aboutData?: AboutData | null
+  softSkills?: string[]
+}
+
+const AboutMe = ({ aboutData, softSkills = [] }: AboutMeProps) => {
+  // Debug log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('AboutMe received soft skills:', softSkills)
+    console.log('AboutMe received about data:', aboutData)
+  }
+
   return (
     <div className="relative group">
       {/* Background Effects */}
@@ -23,7 +36,7 @@ const AboutMe = () => {
               I am{' '}
             </span>
             <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-cyan-400 bg-clip-text text-transparent animate-pulse">
-              Hassan Nahid
+              {aboutData?.name || 'Hassan Nahid'}
             </span>
           </h1>
           
@@ -37,22 +50,34 @@ const AboutMe = () => {
         {/* Description */}
         <div className="space-y-4">
           <p className="text-gray-300 leading-relaxed text-base">
-            <span className="text-white font-semibold">Experienced Full Stack Developer</span> with a passion for building 
-            <span className="text-blue-400 font-medium"> scalable, efficient, and user-friendly</span> web applications. 
-            Adept at designing and developing robust architectures, optimizing performance, and implementing security best practices.
+            {aboutData?.about || (
+              <>
+                <span className="text-white font-semibold">Experienced Full Stack Developer</span> with a passion for building 
+                <span className="text-blue-400 font-medium"> scalable, efficient, and user-friendly</span> web applications. 
+                Adept at designing and developing robust architectures, optimizing performance, and implementing security best practices.
+              </>
+            )}
           </p>
           
-          <p className="text-gray-400 leading-relaxed text-sm">
-            Skilled in <span className="text-purple-400 font-medium">problem-solving, debugging,</span> and collaborating with 
-            cross-functional teams to deliver high-quality, maintainable solutions. Committed to staying updated with emerging 
-            technologies and continuously improving development processes.
-          </p>
+          {aboutData?.bio && (
+            <p className="text-gray-400 leading-relaxed text-sm">
+              {aboutData.bio}
+            </p>
+          )}
+          
+          {!aboutData?.about && (
+            <p className="text-gray-400 leading-relaxed text-sm">
+              Skilled in <span className="text-purple-400 font-medium">problem-solving, debugging,</span> and collaborating with 
+              cross-functional teams to deliver high-quality, maintainable solutions. Committed to staying updated with emerging 
+              technologies and continuously improving development processes.
+            </p>
+          )}
         </div>
 
-        {/* Skills Highlights */}
+        {/* Skills Highlights - Soft Skills from Backend */}
         <div className="mt-6 pt-6 border-t border-gray-700/50">
           <div className="flex flex-wrap gap-2">
-            {['Problem Solving', 'Team Collaboration', 'Performance Optimization', 'Security'].map((skill, index) => (
+            {(softSkills.length > 0 ? softSkills : ['Problem Solving', 'Team Collaboration', 'Performance Optimization', 'Security']).map((skill, index) => (
               <span 
                 key={skill}
                 className="px-3 py-1 text-xs font-medium bg-gradient-to-r from-gray-800 to-gray-700 text-gray-300 rounded-full border border-gray-600/50 hover:border-blue-500/30 hover:text-white transition-all duration-300"
