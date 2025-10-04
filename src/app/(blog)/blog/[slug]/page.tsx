@@ -8,11 +8,11 @@ import {
   Clock, 
   User, 
   Tag,
-  Heart,
   MessageCircle
 } from 'lucide-react'
 import { blogApi, BlogData } from '@/lib/api'
 import { Metadata } from 'next'
+import CommentsSection from '@/components/blog/CommentsSection'
 
 interface BlogPageProps {
   params: {
@@ -299,56 +299,19 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4">
-                  <button className="flex items-center space-x-2 px-4 py-2 bg-red-500/20 text-red-300 rounded-full hover:bg-red-500/30 transition-colors">
-                    <Heart className="w-4 h-4" />
-                    <span>Like Post</span>
-                  </button>
-                </div>
+
               </div>
             </div>
           </div>
         </div>
       </article>
 
-      {/* Comments Section */}
-      <section className="py-16 border-t border-gray-800/50">
-        <div className="container mx-auto px-6">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-2xl font-bold text-white mb-8">
-              Comments ({post.commentCount || 0})
-            </h2>
-            
-            {/* Comments List */}
-            <div className="space-y-6">
-              {post.comments && post.comments.length > 0 ? (
-                post.comments.map((comment) => (
-                  <div key={comment._id || Math.random()} className="bg-gray-800/30 rounded-lg p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center">
-                        <User className="w-5 h-5 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <h4 className="font-semibold text-white">{comment.author}</h4>
-                          <span className="text-gray-400 text-sm">
-                            {timeAgo(comment.createdAt)}
-                          </span>
-                        </div>
-                        <p className="text-gray-300">{comment.content}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-400">No comments yet. Be the first to comment!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Interactive Comments Section */}
+      <CommentsSection 
+        blogId={post._id}
+        initialComments={post.comments?.filter(comment => comment.isApproved) || []}
+        initialCommentCount={post.commentCount || 0}
+      />
 
       {/* Related Posts Section */}
       <section className="py-16 border-t border-gray-800/50">
