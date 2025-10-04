@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { toast } from "sonner";
 
 const Contact = () => {
     const [formData, setFormData] = useState({
@@ -23,17 +24,33 @@ const Contact = () => {
         e.preventDefault();
         setIsSubmitting(true);
         
-        // Simulate form submission
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        setIsSubmitting(false);
-        setIsSubmitted(true);
-        
-        // Reset form after success
-        setTimeout(() => {
-            setIsSubmitted(false);
-            setFormData({ name: '', email: '', subject: '', message: '' });
-        }, 3000);
+        try {
+            const response = await fetch("https://formspree.io/f/xzzrqeqn", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+            
+            if (response.ok) {
+                toast.success("Email sent successfully!");
+                setFormData({ name: "", email: "", subject: "", message: "" });
+                setIsSubmitted(true);
+                
+                // Reset success state after 3 seconds
+                setTimeout(() => {
+                    setIsSubmitted(false);
+                }, 3000);
+            } else {
+                throw new Error("Failed to send email");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to send email. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -90,7 +107,7 @@ const Contact = () => {
                                 </div>
                                 <div>
                                     <h4 className="text-white font-semibold group-hover:text-blue-400 transition-colors duration-300">Email</h4>
-                                    <p className="text-gray-400">your.email@example.com</p>
+                                    <p className="text-gray-400">hassan.nahid.dev@gmail.com</p>
                                 </div>
                             </div>
 
@@ -102,7 +119,7 @@ const Contact = () => {
                                 </div>
                                 <div>
                                     <h4 className="text-white font-semibold group-hover:text-purple-400 transition-colors duration-300">Phone</h4>
-                                    <p className="text-gray-400">+1 (555) 123-4567</p>
+                                    <p className="text-gray-400">+8801780365440</p>
                                 </div>
                             </div>
 
@@ -115,7 +132,7 @@ const Contact = () => {
                                 </div>
                                 <div>
                                     <h4 className="text-white font-semibold group-hover:text-cyan-400 transition-colors duration-300">Location</h4>
-                                    <p className="text-gray-400">Your City, Country</p>
+                                    <p className="text-gray-400">Sirajganj, Bangladesh</p>
                                 </div>
                             </div>
                         </div>
@@ -125,7 +142,7 @@ const Contact = () => {
                             <h4 className="text-white font-semibold mb-4">Follow Me</h4>
                             <div className="flex flex-wrap gap-4">
                                 <a
-                                    href="https://github.com/yourusername"
+                                    href="https://github.com/hassan-nahid"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group w-12 h-12 bg-gradient-to-br from-gray-800 to-gray-700 hover:from-gray-700 hover:to-gray-600 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
@@ -135,7 +152,7 @@ const Contact = () => {
                                     </svg>
                                 </a>
                                 <a
-                                    href="https://linkedin.com/in/yourusername"
+                                    href="https://www.linkedin.com/in/hassan-nahid"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
@@ -145,17 +162,17 @@ const Contact = () => {
                                     </svg>
                                 </a>
                                 <a
-                                    href="https://twitter.com/yourusername"
+                                    href="https://x.com/HassanNahid100"
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="group w-12 h-12 bg-gradient-to-br from-sky-500 to-sky-400 hover:from-sky-400 hover:to-sky-300 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+                                    className="group w-12 h-12 bg-gradient-to-br from-black to-gray-800 hover:from-gray-800 hover:to-gray-700 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
                                 >
-                                    <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                                     </svg>
                                 </a>
                                 <a
-                                    href="https://instagram.com/yourusername"
+                                    href="https://www.instagram.com/HassanNahid10"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
@@ -165,7 +182,7 @@ const Contact = () => {
                                     </svg>
                                 </a>
                                 <a
-                                    href="https://facebook.com/yourusername"
+                                    href="https://www.facebook.com/HassanNahid10"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="group w-12 h-12 bg-gradient-to-br from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110"
