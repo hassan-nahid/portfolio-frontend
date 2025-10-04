@@ -206,7 +206,7 @@ export default function AboutPage() {
       ...prev,
       photo: uploadMethod === 'url' ? prev.photo : ''
     }))
-    toast.info('File selection cleared')
+    toast('File selection cleared')
   }
 
   const switchUploadMethod = (method: 'url' | 'file') => {
