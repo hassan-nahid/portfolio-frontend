@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { projectsApi, ProjectData, skillsApi, SkillData } from '@/lib/api'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast';
 
 // Backend Category enum
 enum ProjectCategory {

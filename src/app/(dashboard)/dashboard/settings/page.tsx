@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { userApi, ChangePasswordData } from '@/lib/api'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast';
 
 interface PasswordFormData {
   oldPassword: string

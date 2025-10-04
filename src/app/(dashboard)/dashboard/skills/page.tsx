@@ -13,7 +13,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { skillsApi, SkillData, SkillCategoryData } from '@/lib/api'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast';
 
 // Using API types
 type SkillCategory = SkillCategoryData

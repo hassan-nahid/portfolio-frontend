@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { blogApi } from '@/lib/api'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast';
 
 // Backend Blog Categories enum
 enum BlogCategory {

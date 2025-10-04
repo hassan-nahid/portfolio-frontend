@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { aboutApi, AboutData } from '@/lib/api'
-import { toast } from 'sonner'
+import toast from 'react-hot-toast';
 
 export default function AboutPage() {
   const [aboutData, setAboutData] = useState<AboutData>({

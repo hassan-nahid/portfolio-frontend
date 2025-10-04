@@ -482,6 +482,83 @@ export const blogApi = {
   getByIdForAdmin: (id: string) =>
     apiRequest<BlogData>(`/blog/admin/${id}`),
 
+  getStats: () =>
+    apiRequest<{
+      overview: {
+        totalBlogs: number
+        publishedBlogs: number
+        draftBlogs: number
+        featuredBlogs: number
+        totalViews: number
+        totalComments: number
+        pendingComments: number
+        averageViews: number
+        averageComments: number
+      }
+      categoryStats: Array<{
+        category: string
+        count: number
+        views: number
+        comments: number
+      }>
+      monthlyStats: Array<{
+        month: string
+        blogs: number
+        views: number
+        comments: number
+        published: number
+      }>
+      topBlogsByViews: Array<{
+        _id: string
+        title: string
+        slug: string
+        views: number
+        comments: number
+        category: string
+        publishedAt: string
+        author: {
+          _id: string
+          name: string
+          email: string
+        }
+      }>
+      recentActivity: Array<{
+        _id: string
+        title: string
+        slug: string
+        status: string
+        updatedAt: string
+        author: {
+          _id: string
+          name: string
+          email: string
+        }
+      }>
+      topTags: Array<{
+        tag: string
+        count: number
+        views: number
+      }>
+      authorStats: Array<{
+        authorId: string
+        name: string
+        blogs: number
+        views: number
+        comments: number
+        published: number
+      }>
+      engagement: {
+        totalViews: number
+        totalComments: number
+        viewsToCommentsRatio: number
+        averageViewsPerPost: number
+        mostViewedCategory: {
+          category: string
+          views: number
+        }
+      }
+    }>(`/blog/admin/stats`),
+
   create: (formData: FormData) =>
     apiRequest<BlogData>('/blog/create', {
       method: 'POST',
